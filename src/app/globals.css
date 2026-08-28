@@ -96,7 +96,7 @@ button {
   cursor: pointer;
 }
 
-/* Lo que sigue lo usa src/app/Categorias/page.js (no se toco en este trabajo). */
+/* Lo que sigue lo usa src/app/Categorias/page.jsx (no se toco en este trabajo). */
 
 .workspace {
   display: flex;
@@ -195,7 +195,7 @@ h1 {
   overflow-x: auto;
 }
 
-/* Escopado a .tablePanel (solo lo usa Categorias/page.js): un `table { }`
+/* Escopado a .tablePanel (solo lo usa Categorias/page.jsx): un `table { }`
    global forzaba min-width:880px en TODAS las tablas del sitio, incluidas
    las tablas nuevas con table-fixed en Tailwind, generando scroll lateral
    en pantallas mas angostas. */

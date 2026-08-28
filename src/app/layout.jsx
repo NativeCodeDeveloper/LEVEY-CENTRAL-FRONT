@@ -35,6 +35,7 @@ export default function RootLayout({ children }) {
           signInUrl="/sign-in"
           signInFallbackRedirectUrl="/"
           signUpFallbackRedirectUrl="/"
+          afterSignOutUrl="/sign-in"
         >
           <AppShell>{children}</AppShell>
         </ClerkProvider>

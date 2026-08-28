@@ -22,7 +22,7 @@ export default function PaginaInicioSesion() {
               Ciencia, precisión y confianza en cada resultado.
             </h1>
             <p className="m-0 mt-4 max-w-[560px] text-[19px] font-normal leading-7 tracking-[0.005em] text-white/55 drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)] sm:text-[20px]">
-              Inteligencia artificial para una nueva generación de control de laboratorios clínicos.
+              ACCESO CENTRAL
             </p>
           </div>
         </section>
