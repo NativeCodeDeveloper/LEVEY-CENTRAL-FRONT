@@ -67,6 +67,7 @@ const Toaster = forwardRef(function Toaster(
     }) {
       const Icon = variantIcons[variant] ?? variantIcons.default;
       const selectedVariant = variantStyles[variant] ? variant : "default";
+      const toastId = `custom-${selectedVariant}-${position}-${title ?? ""}-${message ?? ""}`;
 
       toastReference.current = sonnerToast.custom(
         (toastId) => (
@@ -135,7 +136,7 @@ const Toaster = forwardRef(function Toaster(
             </div>
           </motion.div>
         ),
-        { duration, position },
+        { duration, position, id: toastId },
       );
 
       return toastReference.current;

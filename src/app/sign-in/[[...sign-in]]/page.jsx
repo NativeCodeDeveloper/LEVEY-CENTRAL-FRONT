@@ -10,10 +10,10 @@ export default function PaginaInicioSesion() {
         <section className="relative flex min-h-[280px] overflow-hidden bg-black/30 p-6 text-white backdrop-blur-[2px] sm:p-8 lg:min-h-screen lg:p-10">
           <div className="relative z-10 flex w-full flex-col">
             <Image
-              src="/leveayqclogo.png"
-              alt="LeveyQC"
-              width={1600}
-              height={696}
+              src="/cent.png"
+              alt="LeveyQC Acceso Central"
+              width={2172}
+              height={724}
               priority
               className="h-auto w-60 object-contain sm:w-72"
             />

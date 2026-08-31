@@ -4,7 +4,6 @@ import {
     Pencil,
     Plus,
     Power,
-    Search,
     Tags,
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
@@ -442,8 +441,8 @@ export default function PaginaTiposUsuario() {
 
                 {/* Sección que contiene el listado de tipos de usuario registrados. */}
                 <section className="mt-6 overflow-hidden rounded-xl border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0_/_0.02)]">
-                    {/* Encabezado del listado y campo de búsqueda visual. */}
-                    <div className="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Encabezado del listado. */}
+                    <div className="border-b border-line p-4">
                         <div>
                             <p className="text-base font-semibold tracking-[-0.02em] text-ink">
                                 Tipos registrados
@@ -452,27 +451,6 @@ export default function PaginaTiposUsuario() {
                             <p className="mt-1 text-xs text-ink-muted">
                                 Perfiles disponibles para la gestión de usuarios
                             </p>
-                        </div>
-
-                        {/* Campo visual para buscar tipos de usuario. */}
-                        <div className="relative w-full sm:w-64">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" />
-
-                            <input
-                                value={nombre}
-
-                                onChange={(e) => {
-                                    const valor = e.target.value;
-                                    setNombre(valor);
-                                    buscarNombre(valor);
-
-                                }}
-
-                                type="search"
-                                aria-label="Buscar tipo de usuario por nombre"
-                                placeholder="Buscar por nombre..."
-                                className="h-10 w-full rounded-lg border border-line bg-canvas pl-9 pr-3 text-sm outline-none placeholder:text-ink-faint focus:border-line-strong"
-                            />
                         </div>
                     </div>
 
