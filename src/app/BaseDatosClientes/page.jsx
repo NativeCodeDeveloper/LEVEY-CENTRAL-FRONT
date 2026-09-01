@@ -114,6 +114,12 @@ const iconos = {
       <path d="M13 22l8-8-3-3-8 8v3h3z" />
     </>
   ),
+  encendido: (
+    <>
+      <path d="M12 2v10" />
+      <path d="M6.2 5.8a8 8 0 1 0 11.6 0" />
+    </>
+  ),
 };
 
 function Icono({ nombre, className = "h-5 w-5" }) {
@@ -548,7 +554,7 @@ export default function BaseDatosClientesPage() {
             <span className="rounded-full bg-surface-muted px-2.5 py-1 text-[11px] font-semibold text-ink-muted">{basesDatosFiltradas.length} visibles</span>
           </div>
           <div className="overflow-x-auto">
-          <table className="min-w-[1050px] w-full">
+          <table className="min-w-[1000px] w-full">
             <thead className="border-b border-line bg-surface-muted/70">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -562,9 +568,6 @@ export default function BaseDatosClientesPage() {
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Laboratorio
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                  Motor
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   <div className="flex items-center gap-1">
@@ -607,11 +610,6 @@ export default function BaseDatosClientesPage() {
                         {getNombreLaboratorio(bd.idLaboratorioClinico)}
                       </td>
                       <td className="px-4 py-4">
-                        <span className="inline-flex items-center rounded-md border border-line bg-surface-muted px-2 py-1 text-xs font-semibold text-ink-muted">
-                          {bd.motorBaseDatos}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
                         <div className="flex flex-col">
                           <span className="font-mono text-[13px] font-medium text-ink">{bd.hostReferencia}</span>
                           <span className="font-mono text-xs text-ink-faint">:{bd.puertoReferencia}</span>
@@ -628,39 +626,20 @@ export default function BaseDatosClientesPage() {
                       <td className="px-4 py-4 text-center">
                         <button
                           type="button"
-                          role="switch"
-                          aria-checked={bd.activo === 1}
                           onClick={() => alternarActivo(bd.idBaseDatosLaboratorio)}
                           title={bd.activo === 1 ? "Desactivar base de datos" : "Activar base de datos"}
-                          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500/30 ${
-                            bd.activo === 1 ? "bg-emerald-500" : "bg-gray-300"
+                          className={`inline-flex h-8 min-w-[98px] items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-semibold transition focus:outline-none focus:ring-2 focus:ring-line-strong focus:ring-offset-2 ${
+                            bd.activo === 1
+                              ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                              : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                           }`}
                         >
-                          <span
-                            className={`inline-block size-3.5 transform rounded-full bg-white shadow transition-transform ${
-                              bd.activo === 1 ? "translate-x-[18px]" : "translate-x-1"
-                            }`}
-                          />
+                          <Icono nombre="encendido" className="size-3.5" />
+                          {bd.activo === 1 ? "Apagar" : "Encender"}
                         </button>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            type="button"
-                            role="switch"
-                            aria-checked={bd.estadoConexion === "CONECTADO"}
-                            onClick={() => alternarConexion(bd.idBaseDatosLaboratorio)}
-                            title={bd.estadoConexion === "CONECTADO" ? "Conectado - clic para desconectar" : "Desconectado - clic para conectar"}
-                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500/30 ${
-                              bd.estadoConexion === "CONECTADO" ? "bg-emerald-500" : "bg-gray-300"
-                            }`}
-                          >
-                            <span
-                              className={`inline-block size-3.5 transform rounded-full bg-white shadow transition-transform ${
-                                bd.estadoConexion === "CONECTADO" ? "translate-x-[18px]" : "translate-x-1"
-                              }`}
-                            />
-                          </button>
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => abrirModalEditar(bd)}
@@ -824,16 +803,20 @@ export default function BaseDatosClientesPage() {
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-3 pt-6">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.activo === 1}
-                      onChange={toggleActivo}
-                      className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Activo</span>
-                  </label>
+                <div className="pt-6">
+                  <button
+                    type="button"
+                    onClick={toggleActivo}
+                    title={formData.activo === 1 ? "Desactivar base de datos" : "Activar base de datos"}
+                    className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+                      formData.activo === 1
+                        ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                        : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    }`}
+                  >
+                    <Icono nombre="encendido" className="size-4" />
+                    {formData.activo === 1 ? "Apagar base de datos" : "Encender base de datos"}
+                  </button>
                 </div>
               </div>
               {/* Confirmación de identidad */}

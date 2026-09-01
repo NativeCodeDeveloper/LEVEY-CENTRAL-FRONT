@@ -21,6 +21,7 @@ import {useAuth} from "@clerk/nextjs";
 export default function PaginaTiposUsuario() {
     const API = process.env.NEXT_PUBLIC_API_URL;
     const toasterRef = useRef(null);
+    const formularioTipoUsuarioRef = useRef(null);
 
     const {
         getToken,
@@ -143,6 +144,7 @@ export default function PaginaTiposUsuario() {
                     duration: 4000,
                 });
 
+                formularioTipoUsuarioRef.current?.hidePopover();
                 await obtenerDatosTipos();
                 return;
 
@@ -326,6 +328,9 @@ export default function PaginaTiposUsuario() {
                     duration: 4000,
                 });
 
+                document.getElementById(`editar-tipo-usuario-${idTipoUsuarios}`)?.hidePopover();
+                setNombre("");
+                setDescripcion("");
                 await obtenerDatosTipos();
                 return;
 
@@ -680,6 +685,7 @@ export default function PaginaTiposUsuario() {
                 {/* Formulario visual para crear un nuevo tipo de usuario. */}
                 <div
                     id="formulario-tipo-usuario"
+                    ref={formularioTipoUsuarioRef}
                     popover="auto"
                     className="m-auto w-[min(560px,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-5 shadow-2xl backdrop:bg-black/35 sm:p-6"
                 >

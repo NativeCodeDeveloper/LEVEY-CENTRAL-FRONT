@@ -705,33 +705,17 @@ export default function LaboratoriosClinicos() {
         <main className="relative min-h-screen overflow-hidden bg-canvas px-4 py-7 text-ink sm:px-7 sm:py-9 lg:px-10">
             <Toaster ref={toasterRef} />
 
-            <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-status-info-soft/60 blur-3xl" />
-            <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -left-32 size-96 rounded-full bg-status-ok-soft/50 blur-3xl" />
-
             <div className="relative mx-auto max-w-[1440px]">
-                <header className="relative overflow-hidden rounded-[28px] border border-white/10 bg-sidebar-bg px-5 py-7 text-white shadow-[0_28px_70px_-38px_rgba(11,13,16,0.9)] sm:px-8 sm:py-9 lg:px-10">
-                    <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_82%_10%,rgba(91,62,200,0.28),transparent_34%),radial-gradient(circle_at_12%_110%,rgba(21,128,61,0.2),transparent_38%)]" />
-                    <div className="relative">
-                        <div className="max-w-3xl">
-                            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/65 backdrop-blur">
-                                <span className="size-1.5 rounded-full bg-status-ok shadow-[0_0_0_4px_rgba(21,128,61,0.15)]" />
-                                Red institucional
-                            </div>
-                            <h1 className="max-w-2xl !text-[32px] !font-semibold !leading-[1.04] !tracking-[-0.045em] !text-white sm:!text-[42px] lg:!text-[48px]">
-                                Laboratorios clínicos
-                            </h1>
-                        </div>
-
+                <header className="border-b border-line pb-6 sm:pb-7">
+                    <div className="max-w-3xl">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-faint">Gestión institucional</p>
+                        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-ink sm:text-[34px]">Laboratorios clínicos</h1>
+                        <p className="mt-2 text-sm leading-6 text-ink-muted">Administra las instituciones registradas y su información de contacto.</p>
                     </div>
                 </header>
 
-                <section className="mt-8">
-                    <div className="mb-5 flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
-                        <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-faint">Directorio institucional</p>
-                            <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-ink sm:text-2xl">Instituciones registradas</h2>
-                            <p className="mt-1.5 text-sm text-ink-muted">Datos de identificación, contacto y ubicación de la red clínica.</p>
-                        </div>
+                <section className="mt-7">
+                    <div className="mb-5 flex justify-end">
                         <div className="flex flex-wrap items-center gap-2.5">
                             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-[11px] font-semibold text-ink-muted shadow-sm">
                                 <Building2 aria-hidden="true" className="size-3.5 text-status-info" />
@@ -750,13 +734,12 @@ export default function LaboratoriosClinicos() {
 
                     <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_12px_36px_-28px_rgba(11,13,16,0.55)]">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[1180px] border-collapse text-left">
+                            <table className="w-full min-w-[1030px] border-collapse text-left">
                                 <caption className="sr-only">Listado de laboratorios clínicos registrados</caption>
                                 <thead className="border-b border-line bg-surface-muted/70">
                                     <tr className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
                                         <th scope="col" className="w-20 px-5 py-3.5">ID</th>
-                                        <th scope="col" className="px-4 py-3.5">Laboratorio</th>
-                                        <th scope="col" className="px-4 py-3.5">RUT</th>
+                                        <th scope="col" className="min-w-[300px] px-4 py-3.5">Laboratorio</th>
                                         <th scope="col" className="px-4 py-3.5">Representante</th>
                                         <th scope="col" className="px-4 py-3.5">Contacto</th>
                                         <th scope="col" className="px-4 py-3.5">Ubicación</th>
@@ -776,13 +759,13 @@ export default function LaboratoriosClinicos() {
                                                     {laboratorio.idLaboratorioClinico}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4">
+                                            <td className="min-w-[300px] px-4 py-4">
                                                 <button
                                                     type="button"
                                                     popoverTarget={`editar-laboratorio-${laboratorio.idLaboratorioClinico}`}
                                                     aria-haspopup="dialog"
                                                     aria-controls={`editar-laboratorio-${laboratorio.idLaboratorioClinico}`}
-                                                    className="group flex min-w-[190px] items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-status-info-soft/70 focus:outline-none focus:ring-2 focus:ring-status-info/25"
+                                                    className="group flex min-w-[270px] items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-status-info-soft/70 focus:outline-none focus:ring-2 focus:ring-status-info/25"
                                                 >
                                                     <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-status-info-soft text-status-info">
                                                         <Building2 aria-hidden="true" className="size-4" />
@@ -795,9 +778,6 @@ export default function LaboratoriosClinicos() {
                                                     alActualizar={recargarLaboratorios}
                                                     referenciaToast={toasterRef}
                                                 />
-                                            </td>
-                                            <td className="px-4 py-4 font-mono text-xs font-semibold text-ink-muted">
-                                                {laboratorio.rutInstitucion}
                                             </td>
                                             <td className="px-4 py-4">
                                                 <p className="max-w-[170px] text-sm font-medium leading-5 text-ink">{laboratorio.representanteLegal}</p>

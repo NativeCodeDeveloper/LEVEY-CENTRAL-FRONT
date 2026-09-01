@@ -36,7 +36,7 @@ export default function PaginaAsignacionPermisos() {
 
             if (!res.ok) {
                 return toasterRef.current?.show({
-                    title: `${res.message}`,
+                    title: res.statusText || "No fue posible obtener los permisos disponibles",
                     variant: "error",
                     duration: 1000,
                 });
@@ -94,7 +94,7 @@ export default function PaginaAsignacionPermisos() {
             if(!res.ok){
 
                 return toasterRef.current?.show({
-                    title: respuestaServidor.message ?? "Error al obtener tipos de usuarios",
+                    title: res.statusText || "Error al obtener tipos de usuarios",
                     variant: "error",
                     duration: 1000,
                 });
@@ -104,12 +104,6 @@ export default function PaginaAsignacionPermisos() {
             const respuestaServidor = await res.json();
 
             if(respuestaServidor.success){
-                toasterRef.current?.show({
-                    title: `${respuestaServidor.message}`,
-                    variant: "success",
-                    duration: 1000,
-                });
-
                 return setDataTipos(respuestaServidor.data);
 
             }
@@ -153,7 +147,7 @@ export default function PaginaAsignacionPermisos() {
             if(!res.ok){
 
                 return toasterRef.current?.show({
-                    title: res.message ?? "Error al obtener permisos, el tipo de usuario indicado",
+                    title: res.statusText || "Error al obtener permisos para el tipo de usuario indicado",
                     variant: "error",
                     duration: 1000,
                 });
@@ -163,12 +157,6 @@ export default function PaginaAsignacionPermisos() {
             const respuestaServidor = await res.json();
 
             if(respuestaServidor.success){
-                toasterRef.current?.show({
-                    title: `${respuestaServidor.message}`,
-                    variant: "success",
-                    duration: 1000,
-                });
-
                 return setPermisos(respuestaServidor.data);
 
             }
@@ -229,7 +217,7 @@ export default function PaginaAsignacionPermisos() {
             if(!res.ok){
 
                 return toasterRef.current?.show({
-                    title: res.message ?? "Error",
+                    title: res.statusText || "No fue posible asignar el permiso",
                     variant: "error",
                     duration: 1000,
                 });
@@ -287,7 +275,7 @@ export default function PaginaAsignacionPermisos() {
 
             if(!res.ok){
                 return toasterRef.current?.show({
-                    title: res.message ?? "Error",
+                    title: res.statusText || "No fue posible eliminar el permiso",
                     variant: "error",
                     duration: 1000,
                 });
@@ -414,10 +402,7 @@ export default function PaginaAsignacionPermisos() {
                             <option value="" disabled>Selecciona un permiso</option>
                                 {
                                     data.map((permiso) => (
-                                        <option
-                                            onChange={()=>{
-                                                setIdPermisoAccion(permiso.idPermisoAccion)
-                                            }}
+                                    <option
                                             key={permiso.idPermisoAccion} value={permiso.idPermisoAccion}>{permiso.nombrePermiso}</option>
                                     ))
                                 }
