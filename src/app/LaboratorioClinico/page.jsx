@@ -734,16 +734,25 @@ export default function LaboratoriosClinicos() {
 
                     <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_12px_36px_-28px_rgba(11,13,16,0.55)]">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[1030px] border-collapse text-left">
+                            <table className="w-full min-w-[1300px] table-fixed border-collapse text-left">
                                 <caption className="sr-only">Listado de laboratorios clínicos registrados</caption>
+                                <colgroup>
+                                    <col className="w-[5%]" />
+                                    <col className="w-[22%]" />
+                                    <col className="w-[12%]" />
+                                    <col className="w-[16%]" />
+                                    <col className="w-[16%]" />
+                                    <col className="w-[10%]" />
+                                    <col className="w-[19%]" />
+                                </colgroup>
                                 <thead className="border-b border-line bg-surface-muted/70">
                                     <tr className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
-                                        <th scope="col" className="w-20 px-5 py-3.5">ID</th>
-                                        <th scope="col" className="min-w-[300px] px-4 py-3.5">Laboratorio</th>
+                                        <th scope="col" className="px-5 py-3.5">ID</th>
+                                        <th scope="col" className="px-4 py-3.5">Laboratorio</th>
                                         <th scope="col" className="px-4 py-3.5">Representante</th>
                                         <th scope="col" className="px-4 py-3.5">Contacto</th>
                                         <th scope="col" className="px-4 py-3.5">Ubicación</th>
-                                        <th scope="col" className="px-4 py-3.5">Estado</th>
+                                        <th scope="col" className="px-4 py-3.5 text-center">Estado</th>
                                         <th scope="col" className="px-5 py-3.5 text-right">Acciones</th>
                                     </tr>
                                 </thead>
@@ -759,13 +768,13 @@ export default function LaboratoriosClinicos() {
                                                     {laboratorio.idLaboratorioClinico}
                                                 </span>
                                             </td>
-                                            <td className="min-w-[300px] px-4 py-4">
+                                            <td className="px-4 py-4">
                                                 <button
                                                     type="button"
                                                     popoverTarget={`editar-laboratorio-${laboratorio.idLaboratorioClinico}`}
                                                     aria-haspopup="dialog"
                                                     aria-controls={`editar-laboratorio-${laboratorio.idLaboratorioClinico}`}
-                                                    className="group flex min-w-[270px] items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-status-info-soft/70 focus:outline-none focus:ring-2 focus:ring-status-info/25"
+                                                    className="group flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-status-info-soft/70 focus:outline-none focus:ring-2 focus:ring-status-info/25"
                                                 >
                                                     <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-status-info-soft text-status-info">
                                                         <Building2 aria-hidden="true" className="size-4" />
@@ -783,10 +792,10 @@ export default function LaboratoriosClinicos() {
                                                 <p className="max-w-[170px] text-sm font-medium leading-5 text-ink">{laboratorio.representanteLegal}</p>
                                             </td>
                                             <td className="px-4 py-4">
-                                                <div className="min-w-[190px] space-y-1.5 text-xs text-ink-muted">
+                                                <div className="min-w-0 space-y-1.5 text-xs text-ink-muted">
                                                     <p className="flex items-center gap-2">
                                                         <Mail aria-hidden="true" className="size-3.5 shrink-0 text-ink-faint" />
-                                                        <span className="max-w-[210px] truncate">{laboratorio.emailContacto}</span>
+                                                        <span className="min-w-0 flex-1 truncate">{laboratorio.emailContacto}</span>
                                                     </p>
                                                     <p className="flex items-center gap-2">
                                                         <Phone aria-hidden="true" className="size-3.5 shrink-0 text-ink-faint" />
@@ -795,7 +804,7 @@ export default function LaboratoriosClinicos() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4">
-                                                <div className="flex min-w-[190px] items-start gap-2">
+                                                <div className="flex min-w-0 items-start gap-2">
                                                     <MapPin aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-status-ok" />
                                                     <div>
                                                         <p className="text-xs font-semibold leading-5 text-ink">{laboratorio.direccion}</p>
@@ -810,7 +819,7 @@ export default function LaboratoriosClinicos() {
                                             </td>
                                             <td
                                                 data-activo={laboratorio.activo}
-                                                className="group/estado px-4 py-4"
+                                                className="group/estado px-4 py-4 text-center"
                                             >
                                                 <span className="hidden items-center gap-1.5 rounded-full bg-status-ok-soft px-2.5 py-1 text-[10px] font-bold text-status-ok group-data-[activo=1]/estado:inline-flex">
                                                     <span className="size-1.5 rounded-full bg-current" />
