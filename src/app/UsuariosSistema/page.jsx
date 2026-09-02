@@ -1,5 +1,5 @@
 "use client"
-import {Building2, CheckCircle2, Pencil, Power, Search, ShieldCheck, UserPlus} from "lucide-react";
+import {Building2, CheckCircle2, LoaderCircle, Pencil, Power, Search, ShieldCheck, UserPlus} from "lucide-react";
 import {useEffect, useState} from "react";
 import { useRef } from "react";
 import Toaster from "@/components/ui/toast";
@@ -10,6 +10,7 @@ import {useAuth} from "@clerk/nextjs";
 
 export default function PaginaUsuariosSistema() {
     const toasterRef = useRef(null);
+    const formularioNuevoUsuarioRef = useRef(null);
     const API = process.env.NEXT_PUBLIC_API_URL;
 
     const {
@@ -134,7 +135,6 @@ export default function PaginaUsuariosSistema() {
 
 
 
-    const [clerkUserId, setClerkUserId] = useState("");
     const[nombre, setNombre]=useState("");
     const[apellido, setApellido]=useState("");
     const[rut, setRut]=useState("");
@@ -142,8 +142,23 @@ export default function PaginaUsuariosSistema() {
     const[profesion, setProfesion]=useState("");
     const[username, setUsername]=useState("");
     const[telefono, setTelefono]=useState("");
-    const [idLaboratorioClinico, setIdLaboratorioClinico] = useState("");
+    const[idLaboratorioClinico, setIdLaboratorioClinico] = useState("");
     const[idTipoUsuarios, setIdTipoUsuarios]=useState("");
+    const[password, setPassword]=useState("");
+    const[creandoUsuario, setCreandoUsuario]=useState(false);
+
+    function limpiarFormularioUsuario(){
+        setNombre("");
+        setApellido("");
+        setRut("");
+        setEmail("");
+        setProfesion("");
+        setUsername("");
+        setTelefono("");
+        setIdLaboratorioClinico("");
+        setIdTipoUsuarios("");
+        setPassword("");
+    }
 
     async function crearUsuario(
         nombre,
@@ -154,8 +169,11 @@ export default function PaginaUsuariosSistema() {
         username,
         telefono,
         idLaboratorioClinico,
-        idTipoUsuarios
+        idTipoUsuarios,
+        password
     ){
+        setCreandoUsuario(true);
+
         try {
             const token = await getToken();
             const res = await fetch(`${API}/usuarios-levey/insertar`,{
@@ -166,17 +184,20 @@ export default function PaginaUsuariosSistema() {
                     "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    clerkUserId: `exaple?1313123`,
-                    nombre,
-                    apellido,
-                    rut,
-                    email,
-                    profesion,
-                    username,
-                    telefono,
-                    idLaboratorioClinico,
-                    idTipoUsuarios,
-                    usuarioCreacionId: userId
+
+                    usuario: {
+                        nombre,
+                        apellido,
+                        rut,
+                        email,
+                        profesion,
+                        username,
+                        telefono,
+                        idLaboratorioClinico,
+                        idTipoUsuarios,
+                        usuarioCreacionId: userId,
+                    },
+                    password
                 }),
             });
 
@@ -197,6 +218,9 @@ export default function PaginaUsuariosSistema() {
                     variant: "success",
                     duration: 4000,
                 });
+                limpiarFormularioUsuario();
+                formularioNuevoUsuarioRef.current?.hidePopover();
+                return;
             }
 
             if (!respuestaBackend.success) {
@@ -213,6 +237,8 @@ export default function PaginaUsuariosSistema() {
                 variant: "error",
                 duration: 4000,
             });
+        }finally {
+            setCreandoUsuario(false);
         }
     }
 
@@ -320,7 +346,7 @@ export default function PaginaUsuariosSistema() {
                     </div>
 
                     {/* Formulario emergente: reúne los campos visuales para registrar un nuevo usuario. */}
-                    <div id="formulario-nuevo-usuario" popover="auto"
+                    <div ref={formularioNuevoUsuarioRef} id="formulario-nuevo-usuario" popover="auto"
                          className="m-auto max-h-[88vh] w-[min(760px,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-line bg-surface p-5 shadow-2xl backdrop:bg-black/35 sm:p-6">
                         {/* Cabecera del formulario: muestra su propósito y el control visual para cerrarlo. */}
                         <div className="flex items-center gap-3 border-b border-line pb-4">
@@ -404,6 +430,26 @@ export default function PaginaUsuariosSistema() {
                                             className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-line-strong"
                                         />
                                     </label>
+
+
+
+                                    <label className="flex flex-col gap-1.5">
+                                        <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-faint">
+                                            Contraseña <span className="text-status-alert">*</span>
+                                        </span>
+                                        <input
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            type="password"
+                                            placeholder="Mínimo 15 caracteres"
+                                            aria-describedby="requisito-contrasena"
+                                            className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-line-strong"
+                                        />
+                                        <span id="requisito-contrasena" aria-live="polite"
+                                              className={`text-[11px] font-medium transition-colors ${password.length >= 15 ? "text-status-ok" : "text-status-alert"}`}>
+                                            {password.length} caracteres ingresados · mínimo obligatorio: 15 caracteres.
+                                        </span>
+                                    </label>
                                 </div>
                             </div>
                             {/* Perfil y asignación: agrupa los datos profesionales y administrativos. */}
@@ -450,6 +496,8 @@ export default function PaginaUsuariosSistema() {
                                             onChange={(e) => setIdLaboratorioClinico(e.target.value)}
                                             className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none focus:border-line-strong">
 
+                                            <option value="" disabled>Selecciona un laboratorio</option>
+
                                             {
                                                 dataLaboratorios.map((laboratorio) => {
                                                     return(<option value={laboratorio.idLaboratorioClinico} key={laboratorio.idLaboratorioClinico}>{laboratorio.nombreLaboratorioClinico}</option>)
@@ -470,6 +518,7 @@ export default function PaginaUsuariosSistema() {
                                             onChange={(e) => setIdTipoUsuarios(e.target.value)}
                                             className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none focus:border-line-strong">
 
+                                            <option value="" disabled>Selecciona un perfil</option>
 
                                             {
                                                 dataPerfiles.map((perfile) => {
@@ -488,6 +537,8 @@ export default function PaginaUsuariosSistema() {
 
                             {/* Acción final: botón visual preparado para una futura integración. */}
                             <button
+                                disabled={creandoUsuario}
+                                aria-busy={creandoUsuario}
                                 onClick={()=>
                                     crearUsuario(
                                         nombre,
@@ -498,14 +549,14 @@ export default function PaginaUsuariosSistema() {
                                         username,
                                         telefono,
                                         idLaboratorioClinico,
-                                        idTipoUsuarios
+                                        idTipoUsuarios,
+                                        password
                                     )}
                                 type="button"
-                                    className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-ink text-sm font-semibold text-white transition hover:bg-accent-strong">
-                                <CheckCircle2 className="size-4"/>Crear usuario
+                                    className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-ink text-sm font-semibold text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-ink">
+                                {creandoUsuario ? <><LoaderCircle className="size-4 animate-spin"/>Creando usuario...</> : <><CheckCircle2 className="size-4"/>Crear usuario</>}
                             </button>
-                            <p className="text-center text-[11px] leading-4 text-ink-faint">Acción visual sin conexión
-                                ni persistencia configurada.</p></div>
+                        </div>
                     </div>
                 </section>
             </div>
