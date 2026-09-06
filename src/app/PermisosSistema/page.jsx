@@ -18,6 +18,7 @@ function Campo({etiqueta, placeholder}) {
 
 export default function PaginaPermisosSistema() {
     const toasterRef = useRef(null);
+    const formularioPermisoRef = useRef(null);
     const API = process.env.NEXT_PUBLIC_API_URL;
 
     const {
@@ -125,6 +126,12 @@ export default function PaginaPermisosSistema() {
                 const respuestaBackend =await res.json();
 
                 if (respuestaBackend.success) {
+                    setCodigoPermiso("");
+                    setnombrePermiso("");
+                    setmodulo("");
+                    setaccion("");
+                    setdescripcion("");
+                    formularioPermisoRef.current?.hidePopover();
                     await obtenerListaPermisos();
                     return  toasterRef.current?.show({
                         title: `${respuestaBackend.message}`,
@@ -201,6 +208,13 @@ export default function PaginaPermisosSistema() {
                 const respuestaBackend =await res.json();
 
                 if (respuestaBackend.success) {
+                    setidPermisoAccion("");
+                    setCodigoPermisoEdit("");
+                    setNombrePermisoEdit("");
+                    setModuloEdit("");
+                    setAccionEdit("");
+                    setDescripcionEdit("");
+                    document.getElementById("editar-formulario-permiso")?.hidePopover();
                     await obtenerListaPermisos();
                     return  toasterRef.current?.show({
                         title: `${respuestaBackend.message}`,
@@ -502,7 +516,7 @@ export default function PaginaPermisosSistema() {
                     className="font-semibold text-ink">{permisosDemo.length}</span> permisos registrados.
                 </div>
             </section>
-            <div id="formulario-permiso" popover="auto"
+            <div ref={formularioPermisoRef} id="formulario-permiso" popover="auto"
                  className="m-auto max-h-[88vh] w-[min(620px,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-line bg-surface p-5 shadow-2xl backdrop:bg-black/35 sm:p-6">
                 <div className="flex items-center gap-3 border-b border-line pb-4">
                     <div className="flex size-10 items-center justify-center rounded-lg bg-ink text-white">
@@ -524,7 +538,7 @@ export default function PaginaPermisosSistema() {
                             <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-faint">Código de permiso</span>
                             <input
                                 value={codigoPermiso}
-                                onChange={e => setCodigoPermiso(e.target.value)}
+                                onChange={e => setCodigoPermiso(e.target.value.toUpperCase())}
                                 placeholder="Ej. QC.VALIDAR" className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-line-strong" />
                         </label>
                         {/* Nombre descriptivo que verá el usuario. */}
@@ -606,7 +620,7 @@ export default function PaginaPermisosSistema() {
                     <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-faint"> Código / Permiso </span>
                     <input
                         value={codigoPermisoEdit}
-                        onChange={e => setCodigoPermisoEdit(e.target.value)}
+                        onChange={e => setCodigoPermisoEdit(e.target.value.toUpperCase())}
                         placeholder="Ej. QC.VALIDAR"
                            className="h-10 rounded-lg border border-line bg-canvas px-3 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-line-strong"/>
                 </label>

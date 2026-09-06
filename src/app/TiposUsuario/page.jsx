@@ -144,6 +144,8 @@ export default function PaginaTiposUsuario() {
                     duration: 4000,
                 });
 
+                setNombre("");
+                setDescripcion("");
                 formularioTipoUsuarioRef.current?.hidePopover();
                 await obtenerDatosTipos();
                 return;

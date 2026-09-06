@@ -157,7 +157,7 @@ export default function PaginaAsignacionPermisos() {
             const respuestaServidor = await res.json();
 
             if(respuestaServidor.success){
-                return setPermisos(respuestaServidor.data);
+                return setPermisos(respuestaServidor.data ?? []);
 
             }
 
@@ -349,6 +349,7 @@ export default function PaginaAsignacionPermisos() {
                                     const idSeleccionado = Number(e.target.value);
 
                                     setIdTipoUsuarios(idSeleccionado);
+                                    setPermisos([]);
                                     obtenerPermisos(idSeleccionado);
                                 }}
                                 aria-label="Seleccionar perfil"
