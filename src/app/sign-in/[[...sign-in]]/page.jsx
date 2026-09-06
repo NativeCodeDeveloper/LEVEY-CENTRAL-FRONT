@@ -1,6 +1,7 @@
 import { Auth } from "@/components/ui/auth-form-1";
 import InteractiveNebulaShader from "@/components/ui/liquid-shader";
 import Image from "next/image";
+import imagenNativeCode from "../../../../public/ncode.png";
 
 export default function PaginaInicioSesion() {
     return (
@@ -37,12 +38,13 @@ export default function PaginaInicioSesion() {
                 </section>
 
                 <Image
-                    src="/ncode.png"
+                    src={imagenNativeCode}
                     alt="NativeCode"
                     width={2172}
                     height={724}
-                    sizes="(max-width: 639px) 190px, 240px"
-                    className="mt-5 h-auto w-[190px] shrink-0 object-contain opacity-40 sm:mt-6 sm:w-[240px]"
+                    unoptimized
+                    loading="eager"
+                    className="mt-5 h-16 w-[190px] max-w-full shrink-0 object-contain opacity-55 sm:mt-6 sm:h-20 sm:w-[240px]"
                 />
             </div>
         </main>
