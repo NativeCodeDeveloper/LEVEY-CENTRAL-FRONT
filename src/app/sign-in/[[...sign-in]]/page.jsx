@@ -13,7 +13,7 @@ export default function PaginaInicioSesion() {
             />
             <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-10">
                 <section
-                    className="relative isolate flex w-full max-w-[720px] shrink-0 flex-col items-center overflow-hidden rounded-[32px] border border-white/15 bg-[#0b0b0d]/95 px-6 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-[44px] sm:px-11 sm:py-9"
+                    className="relative isolate flex w-full max-w-[500px] shrink-0 flex-col items-center overflow-hidden rounded-[28px] border border-white/15 bg-[#0b0b0d]/95 px-6 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:rounded-[32px] sm:px-7"
                     aria-label="Acceso a LeveyQC"
                 >
                     <div
@@ -27,11 +27,11 @@ export default function PaginaInicioSesion() {
                         width={2172}
                         height={724}
                         priority
-                        sizes="(max-width: 639px) 260px, 320px"
-                        className="h-auto w-[260px] max-w-full object-contain drop-shadow-[0_0_22px_rgba(255,255,255,0.16)] sm:w-[320px]"
+                        sizes="(max-width: 639px) 220px, 240px"
+                        className="h-auto w-[220px] max-w-full object-contain drop-shadow-[0_0_22px_rgba(255,255,255,0.16)] sm:w-[240px]"
                     />
 
-                    <div className="mt-6 w-full sm:mt-9">
+                    <div className="mt-4 w-full sm:mt-5">
                         <Auth />
                     </div>
                 </section>
