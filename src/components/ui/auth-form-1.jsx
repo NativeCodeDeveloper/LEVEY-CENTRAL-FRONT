@@ -20,8 +20,10 @@ export function Auth() {
       <SignIn
         path="/sign-in"
         routing="path"
-        fallbackRedirectUrl="/"
-        signUpFallbackRedirectUrl="/"
+        fallbackRedirectUrl="/Redireccionamiento"
+        signUpFallbackRedirectUrl="/Redireccionamiento"
+        forceRedirectUrl="/Redireccionamiento"
+        signUpForceRedirectUrl="/Redireccionamiento"
         withSignUp
         appearance={{
           options: {

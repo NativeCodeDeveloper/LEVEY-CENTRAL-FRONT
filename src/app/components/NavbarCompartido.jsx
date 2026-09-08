@@ -17,6 +17,10 @@ const enlaces = [
 export default function NavbarCompartido() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/LeveyDashboardClientes") || pathname.startsWith("/Redireccionamiento")) {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#090d14]/95 shadow-[0_12px_30px_rgb(3_7_18_/_0.24)] backdrop-blur-xl" aria-label="Navegación principal">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-4 sm:h-[72px] sm:px-7 lg:px-10">
