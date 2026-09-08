@@ -43,7 +43,7 @@ export default function PaginaRedireccionamiento() {
             console.log("RESPUESTA AUTH:", respuestaAuth);
 
             if (respuestaAuth.tipoActor === 1) {
-                router.replace("/LaboratorioClinico");
+                router.replace("/admin/LaboratorioClinico");
                 return;
 
             }

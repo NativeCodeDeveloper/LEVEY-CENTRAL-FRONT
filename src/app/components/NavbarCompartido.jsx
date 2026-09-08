@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 
 const enlaces = [
-  { etiqueta: "Laboratorios", href: "/LaboratorioClinico" },
-  { etiqueta: "Bases de datos", href: "/BaseDatosClientes" },
-  { etiqueta: "Usuarios", href: "/UsuariosSistema" },
-  { etiqueta: "Perfiles", href: "/TiposUsuario" },
-  { etiqueta: "Permisos", href: "/PermisosSistema" },
-  { etiqueta: "Asignación Permisos", href: "/AsignacionPermisos" },
+  { etiqueta: "Laboratorios", href: "/admin/LaboratorioClinico" },
+  { etiqueta: "Bases de datos", href: "/admin/BaseDatosClientes" },
+  { etiqueta: "Usuarios", href: "/admin/UsuariosSistema" },
+  { etiqueta: "Perfiles", href: "/admin/TiposUsuario" },
+  { etiqueta: "Permisos", href: "/admin/PermisosSistema" },
+  { etiqueta: "Asignación Permisos", href: "/admin/AsignacionPermisos" },
 ];
 
 export default function NavbarCompartido() {

@@ -45,7 +45,7 @@ export default function RutaAdmin({ children }) {
                 const actor = await res.json();
 
                 if (actor.tipoActor !== 1) {
-                    router.replace("/sin-acceso");
+                    router.replace("/no-access");
                     return;
                 }
 
@@ -53,7 +53,7 @@ export default function RutaAdmin({ children }) {
 
             } catch (error) {
                 console.error(error);
-                router.replace("/sin-acceso");
+                router.replace("/no-access");
             }
         }
 

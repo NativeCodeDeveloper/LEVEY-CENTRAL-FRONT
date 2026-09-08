@@ -4,7 +4,6 @@ import { useAuth } from "@clerk/nextjs";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
-import NavbarCompartido from "./NavbarCompartido";
 
 export default function AppShell({ children }) {
   const { isLoaded, userId } = useAuth();
@@ -26,5 +25,5 @@ export default function AppShell({ children }) {
     );
   }
 
-  return <>{esPaginaDeInicioSesion ? null : <NavbarCompartido />}{children}</>;
+  return <>{children}</>;
 }
