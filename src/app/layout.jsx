@@ -3,6 +3,7 @@ import { esES } from "@clerk/localizations";
 import { Geist, Geist_Mono } from "next/font/google";
 import AppShell from "./components/AppShell";
 import "./globals.css";
+import Script from "next/script";
 
 // El layout se mantiene como Server Component (puede exportar `metadata`).
 // La navegacion interactiva (expandir/colapsar, ruta activa) vive en
@@ -29,6 +30,23 @@ export default function RootLayout({ children }) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+
+    <head>
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
+        {process.env.NODE_ENV === "development" && (
+            <Script
+                src="http://localhost:8097"
+                strategy="beforeInteractive"
+            />
+        )}
+    </head>
+
       <body className="min-h-full">
         <ClerkProvider
           localization={esES}

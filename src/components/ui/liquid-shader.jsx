@@ -16,20 +16,45 @@ export function InteractiveNebulaShader({
     const container = containerRef.current;
     if (!container) return undefined;
 
-    const renderer = new THREE.WebGLRenderer({
+    const opcionesContexto = {
       antialias: true,
       alpha: false,
       powerPreference: "high-performance",
-    });
+    };
+    const lienzo = document.createElement("canvas");
+    let contextoWebGL;
+
+    try {
+      contextoWebGL = lienzo.getContext("webgl2", opcionesContexto);
+    } catch {
+      return undefined;
+    }
+
+    if (!contextoWebGL) return undefined;
+
+    let renderer;
+
+    try {
+      renderer = new THREE.WebGLRenderer({
+        ...opcionesContexto,
+        canvas: lienzo,
+        context: contextoWebGL,
+      });
+    } catch {
+      contextoWebGL.getExtension("WEBGL_lose_context")?.loseContext();
+      return undefined;
+    }
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.domElement.className = "block size-full";
+    renderer.domElement.className = "absolute inset-0 z-10 block size-full";
     renderer.domElement.setAttribute("aria-hidden", "true");
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    const clock = new THREE.Clock();
+    const temporizador = new THREE.Timer();
+    temporizador.connect(document);
 
     const vertexShader = `
       varying vec2 vUv;
@@ -140,8 +165,9 @@ export function InteractiveNebulaShader({
     const resizeObserver = new ResizeObserver(onResize);
     const preferenciaMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    const renderizar = () => {
-      uniforms.iTime.value = clock.getElapsedTime();
+    const renderizar = (marcaTiempo) => {
+      temporizador.update(marcaTiempo);
+      uniforms.iTime.value = temporizador.getElapsed();
       renderer.render(scene, camera);
     };
 
@@ -170,6 +196,7 @@ export function InteractiveNebulaShader({
       scene.remove(mesh);
       geometry.dispose();
       material.dispose();
+      temporizador.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       materialRef.current = null;
@@ -190,9 +217,16 @@ export function InteractiveNebulaShader({
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 bg-black ${className}`}
+      className={`fixed inset-0 isolate overflow-hidden bg-[#02040a] ${className}`}
       aria-hidden="true"
-    />
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#02040a_0%,#07111e_48%,#090511_100%)]" />
+      <div className="pointer-events-none absolute -left-[24%] top-[6%] h-[88%] w-[72%] origin-[62%_48%] rounded-full bg-cyan-500/20 blur-[120px] motion-safe:animate-[spin_24s_linear_infinite]" />
+      <div className="pointer-events-none absolute -left-[20%] top-[5%] h-[98%] w-[56%] -rotate-12 rounded-[46%] border-[32px] border-cyan-300/10 blur-[32px] motion-safe:animate-[spin_30s_linear_infinite]" />
+      <div className="pointer-events-none absolute -right-[18%] -top-[20%] h-[76%] w-[62%] origin-[35%_62%] rounded-full bg-violet-700/20 blur-[140px] motion-safe:animate-[spin_32s_linear_infinite_reverse]" />
+      <div className="pointer-events-none absolute bottom-[-36%] left-[24%] h-[66%] w-[58%] rounded-full bg-blue-600/15 blur-[130px] motion-safe:animate-[pulse_8s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,4,10,0.2)_44%,rgba(2,4,10,0.88)_100%)]" />
+    </div>
   );
 }
 

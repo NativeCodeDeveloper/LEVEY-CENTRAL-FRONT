@@ -15,7 +15,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
-import { categorias } from "@/lib/mockData";
 
 const grupos = [
   {
@@ -23,18 +22,11 @@ const grupos = [
     titulo: "Análisis QC",
     iconoRiel: "reglas",
     items: [
-      { etiqueta: "Registro QC", href: "/AnalisisQC", icono: "registro" },
-      {
-        etiqueta: "Controles",
-        icono: "controles",
-        subitems: categorias.map((categoria) => ({
-          etiqueta: categoria.nombre,
-          href: `/Controles/${categoria.id}`,
-        })),
-      },
+      { etiqueta: "Registro QC", href: "/LeveyDashboardClientes/analisisCalidad/registro", icono: "registro" },
+      { etiqueta: "Analitos Controlados", href: "/LeveyDashboardClientes/analisisCalidad/analitosControlados", icono: "controles" },
+      { etiqueta: "Controles", href: "/LeveyDashboardClientes/analisisCalidad/controles", icono: "controlesQc" },
       { etiqueta: "Calibradores", href: "/Calibradores", icono: "calibradores" },
       { etiqueta: "Control de Pares", href: "/ControlDePares", icono: "controlPares" },
-      { etiqueta: "Reglas Westgard", href: "/Configuraciones/ReglasWestgard", icono: "reglas" },
       { etiqueta: "Reportes", icono: "reportes" },
     ],
   },
@@ -43,11 +35,26 @@ const grupos = [
     titulo: "Gestión",
     iconoRiel: "equipos",
     items: [
-      { etiqueta: "Equipos / Analizadores", icono: "equipos" },
-      { etiqueta: "Reactivos / Lotes", icono: "reactivos" },
-      { etiqueta: "Muestras / Resultados", icono: "muestras" },
-      { etiqueta: "Acciones correctivas", icono: "acciones" },
-      { etiqueta: "Bitácora", icono: "bitacora" },
+      { etiqueta: "Categorias Analitos ", icono: "categorias",
+          href: "/LeveyDashboardClientes/gestionLevey/categorias",
+      },
+
+
+
+      { etiqueta: "Analitos", icono: "analitos",
+          href: "/LeveyDashboardClientes/gestionLevey/analitos",
+      },
+      { etiqueta: "Matriz Biologica", icono: "matriz",
+          href: "/LeveyDashboardClientes/gestionLevey/matriz",
+      },
+        { etiqueta: "Unidades de Medidas", icono: "unidades", href: "/LeveyDashboardClientes/gestionLevey/unidadesDeMedida",
+        },
+        { etiqueta: "Acciones correctivas", icono: "acciones" , href: "/LeveyDashboardClientes/gestionLevey/accionesCorrectivas"},
+        { etiqueta: "Proveedores", icono: "proveedores", href: "/LeveyDashboardClientes/gestionLevey/proveedores", },
+        { etiqueta: "Analizadores Equipos", icono: "analizadores" },
+        { etiqueta: "Informacion ", icono: "informacion" },
+        { etiqueta: "Reglas de Westgard ", icono: "westgard" },
+
     ],
   },
   {
@@ -77,11 +84,20 @@ const grupos = [
 const trazosPorIcono = {
   registro: <><path d="M5 5h9M5 10h9M5 15h6" /><path d="M17 13l3 3-6 6h-3v-3z" /></>,
   controles: <><path d="M9 3h6M10 3v5.5L5.5 17a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 8.5V3" /></>,
+  controlesQc: <><path d="M12 3.5l6.9 4v8l-6.9 4-6.9-4v-8z" /><path d="M12.5 5.9l4.1 2.4M16.6 14.7l-4.1 2.4M6.9 9.1v4.8" /></>,
+  conversaciones: <><path d="M20 11.5a6.8 6.8 0 0 1-7 6.5 7.6 7.6 0 0 1-3.2-.7L5 19l1.2-3.4A6.2 6.2 0 0 1 5 12c0-3.6 3.1-6.5 7-6.5s8 2.4 8 6z" /><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" /></>,
   calibradores: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" /></>,
   reglas: <><path d="M12 3l7 3v5c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z" /><path d="M9 12l2 2 4-4" /></>,
   reportes: <><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /><path d="M9.5 13h5M9.5 16h5" /></>,
   controlPares: <><circle cx="9" cy="12" r="5" /><circle cx="15" cy="12" r="5" /></>,
   equipos: <><path d="M3 8l9-5 9 5-9 5-9-5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></>,
+  analitos: <><circle cx="12" cy="12" r="2.5" /><circle cx="5" cy="7" r="2" /><circle cx="19" cy="7" r="2" /><circle cx="12" cy="20" r="2" /><path d="M6.7 8.1l3.2 2.3M17.3 8.1l-3.2 2.3M12 14.5V18" /></>,
+  categorias: <><path d="M4 7.5h16M4 12h16M4 16.5h16" /><path d="M7 5v4M12 9.5v5M17 14v4" /></>,
+  matriz: <><path d="M5 4h14v16H5z" /><path d="M5 9h14M5 14h14M10 4v16M15 4v16" /></>,
+  unidades: <><path d="M4 6h16v12H4z" /><path d="M8 6v4M12 6v2.5M16 6v4" /></>,
+  analizadores: <><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="7" y="7" width="6" height="4" rx=".7" /><circle cx="16.5" cy="8" r="1" /><path d="M7 15h10" /><path d="M9 18h6" /></>,
+  informacion: <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5h.01" /></>,
+  westgard: <><path d="M4 19V5M4 19h16" /><path d="M7 15l3-4 3 2 4-6" /><circle cx="7" cy="15" r="1" /><circle cx="10" cy="11" r="1" /><circle cx="13" cy="13" r="1" /><circle cx="17" cy="7" r="1" /></>,
   reactivos: <><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" /></>,
   muestras: <><path d="M9 3h6" /><path d="M10 3v13a2 2 0 0 0 4 0V3" /><path d="M10 13h4" /></>,
   acciones: <><rect x="6" y="4" width="12" height="16" rx="2" /><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" /><path d="M9 12l2 2 4-4" /></>,
@@ -102,7 +118,7 @@ function IconoHamburguesa() {
   );
 }
 
-function IconoItem({ nombre, className = "h-4 w-4" }) {
+function IconoItem({ nombre, className = "h-5 w-5 [filter:drop-shadow(0_0_2px_rgb(255_255_255_/_0.35))_drop-shadow(0_0_6px_rgb(255_255_255_/_0.22))]" }) {
   const trazos = trazosPorIcono[nombre];
   if (!trazos) return null;
   return (
@@ -151,6 +167,15 @@ function RielDeIconos({ grupoActivoId, alSeleccionarGrupo }) {
       </div>
 
       <nav className="flex flex-col items-center gap-1.5" aria-label="Secciones">
+        <Link
+          href="/LeveyDashboardClientes"
+          aria-label="Conversaciones"
+          title="Conversaciones"
+          className="flex size-10 items-center justify-center rounded-lg text-sidebar-text-muted transition hover:bg-sidebar-hover-bg hover:text-sidebar-text"
+        >
+          <IconoItem nombre="conversaciones" />
+        </Link>
+
         {grupos.map((grupo) => {
           const activo = grupoActivoId === grupo.id;
           return (
@@ -296,7 +321,7 @@ function PanelDeDetalle({ grupo, colapsado, alColapsar, onNavegar }) {
             </button>
           </div>
 
-          <div className="px-3 pb-3">
+          <div className="hidden">
             <label className="flex h-9 items-center gap-2 rounded-md border border-sidebar-border bg-sidebar-hover-bg px-2.5 text-sidebar-text-muted focus-within:border-sidebar-text-faint">
               <IconoItem nombre="buscar" className="h-3.5 w-3.5" />
               <input

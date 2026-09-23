@@ -1,1 +1,10 @@
-export { default } from "./admin/LaboratorioClinico/page";
+import LayoutAdministracion from "./admin/layout";
+import LaboratoriosClinicos from "./admin/LaboratorioClinico/page";
+
+export default function PaginaInicio() {
+  return (
+    <LayoutAdministracion>
+      <LaboratoriosClinicos />
+    </LayoutAdministracion>
+  );
+}
