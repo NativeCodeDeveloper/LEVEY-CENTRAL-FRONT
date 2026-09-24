@@ -25,9 +25,10 @@ const grupos = [
       { etiqueta: "Registro QC", href: "/LeveyDashboardClientes/analisisCalidad/registro", icono: "registro" },
       { etiqueta: "Analitos Controlados", href: "/LeveyDashboardClientes/analisisCalidad/analitosControlados", icono: "controles" },
       { etiqueta: "Controles", href: "/LeveyDashboardClientes/analisisCalidad/controles", icono: "controlesQc" },
-      { etiqueta: "Calibradores", href: "/Calibradores", icono: "calibradores" },
-      { etiqueta: "Control de Pares", href: "/ControlDePares", icono: "controlPares" },
+      { etiqueta: "Calibradores", href: "/LeveyDashboardClientes/analisisCalidad/calibradores", icono: "calibradores" },
+      { etiqueta: "Control de Pares", href: "/LeveyDashboardClientes/analisisCalidad/controlDePares", icono: "controlPares" },
       { etiqueta: "Reportes", icono: "reportes" },
+      { etiqueta: "Inventario Laboratorio", icono: "inventario", href: "/LeveyDashboardClientes/analisisCalidad/inventarioLaboratorio" },
     ],
   },
   {
@@ -57,25 +58,6 @@ const grupos = [
 
     ],
   },
-  {
-    id: "administracion",
-    titulo: "Administración",
-    iconoRiel: "usuarios",
-    items: [
-      { etiqueta: "Proveedores", href: "/Proveedores", icono: "proveedores" },
-      { etiqueta: "Usuarios", icono: "usuarios" },
-      { etiqueta: "Roles", icono: "roles" },
-      { etiqueta: "Perfiles QC", icono: "perfiles" },
-      {
-        etiqueta: "Configuraciones",
-        icono: "configuraciones",
-        subitems: [
-          { etiqueta: "Ingreso Analitos", href: "/Configuraciones/Analitos" },
-          { etiqueta: "Ingreso Categorias", href: "/Configuraciones/Categorias" },
-        ],
-      },
-    ],
-  },
 ];
 
 // Set de iconos de linea, minimalistas, dibujados a mano (sin dependencia de
@@ -85,9 +67,10 @@ const trazosPorIcono = {
   registro: <><path d="M5 5h9M5 10h9M5 15h6" /><path d="M17 13l3 3-6 6h-3v-3z" /></>,
   controles: <><path d="M9 3h6M10 3v5.5L5.5 17a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 8.5V3" /></>,
   controlesQc: <><path d="M12 3.5l6.9 4v8l-6.9 4-6.9-4v-8z" /><path d="M12.5 5.9l4.1 2.4M16.6 14.7l-4.1 2.4M6.9 9.1v4.8" /></>,
-  conversaciones: <><path d="M20 11.5a6.8 6.8 0 0 1-7 6.5 7.6 7.6 0 0 1-3.2-.7L5 19l1.2-3.4A6.2 6.2 0 0 1 5 12c0-3.6 3.1-6.5 7-6.5s8 2.4 8 6z" /><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" /></>,
+  campana: <><path d="M6 9.5a6 6 0 0 1 12 0c0 5 1.8 6.2 2.5 7H3.5C4.2 15.7 6 14.5 6 9.5z" /><path d="M10.2 19.5a2 2 0 0 0 3.6 0" /></>,
   calibradores: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" /></>,
   reglas: <><path d="M12 3l7 3v5c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z" /><path d="M9 12l2 2 4-4" /></>,
+  inventario: <><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M4 7.5l8 4.5 8-4.5" /><path d="M12 12v9" /></>,
   reportes: <><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /><path d="M9.5 13h5M9.5 16h5" /></>,
   controlPares: <><circle cx="9" cy="12" r="5" /><circle cx="15" cy="12" r="5" /></>,
   equipos: <><path d="M3 8l9-5 9 5-9 5-9-5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></>,
@@ -169,11 +152,11 @@ function RielDeIconos({ grupoActivoId, alSeleccionarGrupo }) {
       <nav className="flex flex-col items-center gap-1.5" aria-label="Secciones">
         <Link
           href="/LeveyDashboardClientes"
-          aria-label="Conversaciones"
-          title="Conversaciones"
+          aria-label="Notificaciones"
+          title="Notificaciones"
           className="flex size-10 items-center justify-center rounded-lg text-sidebar-text-muted transition hover:bg-sidebar-hover-bg hover:text-sidebar-text"
         >
-          <IconoItem nombre="conversaciones" />
+          <IconoItem nombre="campana" />
         </Link>
 
         {grupos.map((grupo) => {

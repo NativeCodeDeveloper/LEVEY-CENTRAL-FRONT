@@ -1,7 +1,9 @@
 "use client";
 
 import {UserButton, useOrganization, useUser, useAuth} from "@clerk/nextjs";
+import Link from "next/link";
 import {useState} from "react";
+import ContadorCelulas from "./analisisCalidad/controlDePares/ContadorCelulas";
 
 function IconoEdificio() {
   return (
@@ -14,6 +16,7 @@ function IconoEdificio() {
 
 export default function PaginaDashboardClientes() {
   const [modalAvisoAbierto, setModalAvisoAbierto] = useState(false);
+  const [contadorLibreAbierto, setContadorLibreAbierto] = useState(false);
   const { isLoaded: usuarioCargado, user } = useUser();
   const { isLoaded: institucionCargada, organization } = useOrganization();
 
@@ -138,6 +141,10 @@ export default function PaginaDashboardClientes() {
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
                 Nuevo aviso
               </button>
+              <button onClick={() => setContadorLibreAbierto(true)} type="button" className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line-strong bg-white px-5 text-sm font-semibold text-ink shadow-[0_4px_14px_rgb(17_20_28_/_0.08)] transition hover:-translate-y-0.5 hover:border-[#9eabb2] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#6854c7]">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18h8" /><path d="M3 22h18" /><path d="M14 22a7 7 0 1 0 0-14h-1" /><path d="M9 14h2" /><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z" /><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" /></svg>
+                Contador de células
+              </button>
               <div className="group relative inline-flex">
                 <span className="pointer-events-none absolute -inset-3 rounded-full bg-[#6854c7]/65 opacity-90 blur-xl motion-safe:animate-[pulse_2s_ease-in-out_infinite] transition duration-500 group-hover:opacity-100" />
                 <button
@@ -206,13 +213,44 @@ export default function PaginaDashboardClientes() {
             </div>
 
             <aside className="space-y-5 xl:sticky xl:top-6 xl:self-start">
-              <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_rgb(20_25_35_/_0.035)]"><p className="text-[10px] font-bold uppercase tracking-[0.17em] text-ink-faint">Resumen del turno</p><div className="mt-5 space-y-4"><div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#d88a13]" /> Alertas activas</span><strong className="text-sm text-ink">1</strong></div><div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#a93a31]" /> Incidencias</span><strong className="text-sm text-ink">1</strong></div><div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#267046]" /> Entregas de turno</span><strong className="text-sm text-ink">2</strong></div></div><div className="mt-5 border-t border-line pt-4"><p className="text-[10px] uppercase tracking-[0.13em] text-ink-faint">Institución activa</p><p className="mt-2 truncate text-sm font-semibold text-ink">{nombreInstitucion}</p></div></div>
+              <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_rgb(20_25_35_/_0.035)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-ink-faint">Inventario del laboratorio</p>
+                  <Link href="/LeveyDashboardClientes/analisisCalidad/inventarioLaboratorio" className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-line-strong bg-white px-2.5 text-[10px] font-semibold text-ink transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
+                    Editar inventario
+                  </Link>
+                </div>
+                <div className="mt-4 space-y-3.5">
+                  <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#604ca7]" /> Reactivos</span><strong className="text-sm text-ink">24</strong></div>
+                  <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#31708c]" /> Cajas de placas de Petri</span><strong className="text-sm text-ink">3</strong></div>
+                  <div className="flex items-center justify-between gap-3"><span className="flex items-center gap-2 text-sm text-ink-muted"><span className="size-2 rounded-full bg-[#5c6873]" /> Insumos de laboratorio</span><strong className="text-sm text-ink">15</strong></div>
+                </div>
+                <div className="mt-4 border-t border-line pt-3">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-status-warn">Bajo la regla de aviso</p>
+                  <ul className="mt-2 space-y-1.5">
+                    <li className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-ink-muted">Agar sangre · Microbiología</span><strong className="shrink-0 font-mono tabular-nums text-status-alert">2</strong></li>
+                    <li className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-ink-muted">Bilirrubina total · Bioquímica</span><strong className="shrink-0 font-mono tabular-nums text-status-alert">1</strong></li>
+                    <li className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-ink-muted">Tromboplastina para TP · Coagulación</span><strong className="shrink-0 font-mono tabular-nums text-status-warn">5</strong></li>
+                    <li className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-ink-muted">Asas calibradas de 1 µL · Insumos</span><strong className="shrink-0 font-mono tabular-nums text-status-warn">4</strong></li>
+                  </ul>
+                </div>
+                <div className="mt-5 border-t border-line pt-4"><p className="text-[10px] uppercase tracking-[0.13em] text-ink-faint">Institución activa</p><p className="mt-2 truncate text-sm font-semibold text-ink">{nombreInstitucion}</p></div>
+              </div>
               <div className="rounded-2xl bg-[#ece9ff] p-5"><span className="flex size-9 items-center justify-center rounded-xl bg-white text-[#6854c7] shadow-sm"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4M12 8h.01"/></svg></span><h3 className="mt-4 text-sm font-semibold text-ink">Comunicación clara entre turnos</h3><p className="mt-2 text-xs leading-5 text-ink-muted">Incluye el área, el equipo involucrado y las acciones pendientes para que el siguiente turno pueda continuar.</p></div>
             </aside>
           </div>
         </div>
         <footer className="mt-9 flex flex-wrap items-center justify-between gap-2 pb-2 text-[11px] text-ink-faint"><span>Levey Quality Control</span><span>Diseñado para cuidar la calidad.</span></footer>
       </section>
+
+      {contadorLibreAbierto ? (
+        <ContadorCelulas
+          control="Uso libre"
+          onCerrar={() => setContadorLibreAbierto(false)}
+          onAplicar={() => setContadorLibreAbierto(false)}
+        />
+      ) : null}
     </div>
   );
 }

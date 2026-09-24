@@ -84,49 +84,41 @@ function normalizar(texto) {
 }
 
 // Referencia del valor anterior: una sola línea, sin saltos, alineada en horizontal.
-function ReferenciaPrevia({ etiqueta, valor }) {
+function CeldaEstadistica({ valor, valorPrevio }) {
   return (
-    <p className="mt-1 whitespace-nowrap text-[11px] leading-4 text-ink-faint">
-      {etiqueta} <span className="tabular-nums">{valor}</span>
-    </p>
-  );
-}
-
-function CeldaEstadistica({ valor, etiquetaPrevia, valorPrevio }) {
-  return (
-    <td className="px-5 py-4 align-top">
+    <td className="px-3 py-4 align-top">
       <p className="text-[13px] font-semibold tabular-nums text-ink">{valor}</p>
-      <ReferenciaPrevia etiqueta={etiquetaPrevia} valor={valorPrevio} />
+      <p className="mt-1 whitespace-nowrap text-[11px] leading-4 tabular-nums text-ink-faint">{valorPrevio}</p>
     </td>
   );
 }
 
 function AccionesFila({ analito, nivel }) {
   return (
-    <div className="flex h-7 items-center gap-2">
+    <div className="flex h-7 items-center gap-1.5">
       <button
         type="button"
         aria-label={`Validar ${analito}, ${nivel}`}
         title="Validar"
-        className={`group flex size-8 items-center justify-center rounded-lg bg-black text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+        className={`group flex size-7 items-center justify-center rounded-lg bg-black text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
       >
-        <Check className={`size-4 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
+        <Check className={`size-3.5 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
       </button>
       <button
         type="button"
         aria-label={`Acciones correctivas para ${analito}, ${nivel}`}
         title="Acciones correctivas"
-        className={`group flex size-8 items-center justify-center rounded-lg border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+        className={`group flex size-7 items-center justify-center rounded-lg border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
       >
-        <Hammer className={`size-4 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
+        <Hammer className={`size-3.5 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
       </button>
       <button
         type="button"
         aria-label={`Ver ${analito}, ${nivel}`}
         title="Ver detalle"
-        className={`group flex size-8 items-center justify-center rounded-lg border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+        className={`group flex size-7 items-center justify-center rounded-lg border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
       >
-        <Eye className={`size-4 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
+        <Eye className={`size-3.5 transition-transform duration-300 ${EASE_PREMIUM} group-hover:scale-110`} aria-hidden="true" />
       </button>
     </div>
   );
@@ -236,33 +228,33 @@ export default function PaginaRegistroControles() {
         aria-label="Registro diario de controles"
         className="mt-5 overflow-x-auto rounded-2xl border border-line bg-white shadow-[0_12px_36px_rgb(15_23_42_/_0.06)]"
       >
-        <table className="w-full min-w-[1480px] table-fixed border-collapse text-left [&_tbody_td]:align-top [&_tbody_td>p:first-child]:flex [&_tbody_td>p:first-child]:h-7 [&_tbody_td>p:first-child]:items-center">
+        <table className="w-full table-fixed border-collapse text-left [&_tbody_td]:align-top [&_tbody_td>p:first-child]:flex [&_tbody_td>p:first-child]:h-7 [&_tbody_td>p:first-child]:items-center">
           <colgroup>
-            <col className="w-[9%]" />
-            <col className="w-[9%]" />
-            <col className="w-[8%]" />
-            <col className="w-[8%]" />
-            <col className="w-[8%]" />
-            <col className="w-[8%]" />
-            <col className="w-[8%]" />
-            <col className="w-[10%]" />
             <col className="w-[12%]" />
+            <col className="w-[8%]" />
+            <col className="w-[7%]" />
+            <col className="w-[7%]" />
+            <col className="w-[6%]" />
+            <col className="w-[7%]" />
+            <col className="w-[8%]" />
             <col className="w-[9%]" />
-            <col className="w-[11%]" />
+            <col className="w-[15%]" />
+            <col className="w-[9%]" />
+            <col className="w-[12%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-line bg-[#f8f9fb]">
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Analito</th>
-              <th scope="col" title="Valor del día" className="whitespace-nowrap px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Valor</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Unidad</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Media</th>
-              <th scope="col" title="Desviación estándar" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">D.E</th>
-              <th scope="col" title="Coeficiente de variación" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">C.V</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Sesgo</th>
-              <th scope="col" title="Última validación" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Última</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Control</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Lote</th>
-              <th scope="col" className="px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Acciones</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Analito</th>
+              <th scope="col" title="Valor del día" className="whitespace-nowrap px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Valor</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Unidad</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Media</th>
+              <th scope="col" title="Desviación estándar" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">D.E</th>
+              <th scope="col" title="Coeficiente de variación" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">C.V</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Sesgo</th>
+              <th scope="col" title="Última validación" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Última</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Control</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Lote</th>
+              <th scope="col" className="px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -281,46 +273,46 @@ export default function PaginaRegistroControles() {
                   key={`${r.analito}-${r.nivel}`}
                   className={`border-b border-line transition-colors duration-200 ${EASE_PREMIUM} last:border-b-0 hover:bg-[#f8f9fb]`}
                 >
-                  <td className="px-5 py-4 align-top">
+                  <td className="px-3 py-4 align-top">
                     <p className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{r.analito}</p>
-                    <span className="mt-1.5 inline-flex items-center rounded-full border border-status-info/20 bg-status-info-soft px-1.5 py-px text-[9px] font-medium uppercase leading-none text-status-info">
+                    <span className="mt-1.5 block whitespace-nowrap text-[9px] font-medium uppercase leading-none tracking-[0.04em] text-status-info">
                       {r.nivel}
                     </span>
                   </td>
-                  <td className="px-5 py-4 align-top">
+                  <td className="px-3 py-4 align-top">
                     <input
                       type="text"
                       inputMode="decimal"
                       aria-label={`Valor del día para ${r.analito}, ${r.nivel}`}
                       placeholder="Valor"
-                      className={`h-7 w-full max-w-[72px] rounded-md border border-line-strong bg-white px-1.5 text-xs font-medium tabular-nums text-ink shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.03)] outline-none transition-all duration-200 ${EASE_PREMIUM} placeholder:font-normal placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-[3px] focus-visible:ring-status-info/15`}
+                      className={`h-7 w-full max-w-[64px] rounded-md border border-line-strong bg-white px-1.5 text-xs font-medium tabular-nums text-ink shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.03)] outline-none transition-all duration-200 ${EASE_PREMIUM} placeholder:font-normal placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-[3px] focus-visible:ring-status-info/15`}
                     />
-                    <p className="mt-1 whitespace-nowrap text-[11px] leading-4 text-ink-faint">
-                      Ult: <span className="font-medium tabular-nums text-ink-muted">{r.ultimoValor}</span>
+                    <p className="mt-1 whitespace-nowrap text-[11px] font-medium leading-4 tabular-nums text-ink-muted">
+                      {r.ultimoValor}
                     </p>
                   </td>
-                  <CeldaEstadistica valor={r.unidad} etiquetaPrevia="Ult:" valorPrevio={r.unidad} />
-                  <CeldaEstadistica valor={r.media} etiquetaPrevia="Ult:" valorPrevio={r.mediaAnterior} />
-                  <CeldaEstadistica valor={r.desviacion} etiquetaPrevia="Ult:" valorPrevio={r.desviacionAnterior} />
-                  <CeldaEstadistica valor={r.cov} etiquetaPrevia="Ult:" valorPrevio={r.covAnterior} />
-                  <CeldaEstadistica valor={r.sesgo} etiquetaPrevia="Ult:" valorPrevio={r.sesgoAnterior} />
-                  <td className="px-5 py-4 align-top">
+                  <CeldaEstadistica valor={r.unidad} valorPrevio={r.unidad} />
+                  <CeldaEstadistica valor={r.media} valorPrevio={r.mediaAnterior} />
+                  <CeldaEstadistica valor={r.desviacion} valorPrevio={r.desviacionAnterior} />
+                  <CeldaEstadistica valor={r.cov} valorPrevio={r.covAnterior} />
+                  <CeldaEstadistica valor={r.sesgo} valorPrevio={r.sesgoAnterior} />
+                  <td className="px-3 py-4 align-top">
                     <p className="text-[13px] font-medium text-ink">{r.validadoPor}</p>
                     <p className="mt-1 whitespace-nowrap text-[11px] leading-4 tabular-nums text-ink-faint">{r.fechaValidacion}</p>
                   </td>
-                  <td className="px-5 py-4 align-top">
+                  <td className="px-3 py-4 align-top">
                     <p className="text-[13px] font-medium text-ink">{r.control}</p>
-                    <p className="mt-1 whitespace-nowrap text-[11px] leading-4 text-ink-faint">
-                      Ult: <span className={`font-medium ${TONO_ESTADO[r.estado.tono]}`}>{r.estado.texto}</span>
+                    <p className={`mt-1 whitespace-nowrap text-[11px] font-medium leading-4 ${TONO_ESTADO[r.estado.tono]}`}>
+                      {r.estado.texto}
                     </p>
                   </td>
-                  <td className="px-5 py-4 align-top">
+                  <td className="px-3 py-4 align-top">
                     <p className="text-[13px] font-medium tabular-nums text-ink">{r.lote}</p>
                     <p className={`mt-1 whitespace-nowrap text-[11px] font-medium leading-4 ${r.calibrado ? "text-status-ok" : "text-status-alert"}`}>
                       {r.calibrado ? "Calibrado" : "Descalibrado"}
                     </p>
                   </td>
-                  <td className="px-5 py-4 align-top">
+                  <td className="px-3 py-4 align-top">
                     <AccionesFila analito={r.analito} nivel={r.nivel} />
                   </td>
                 </tr>
