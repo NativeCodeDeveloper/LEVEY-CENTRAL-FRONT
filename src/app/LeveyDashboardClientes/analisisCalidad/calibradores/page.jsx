@@ -98,6 +98,46 @@ const CALIBRADORES = [
 ];
 
 function MicroDato({ etiqueta, tono = "", children }) {
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function listar(){
+  try {
+const res = await fetch(`${API_URL}/calibradores`, {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+    body: JSON.stringify({
+      "page": 1,
+      "pageSize": 10,
+      "sort": "creacion",
+      "sortDirection": "desc",
+      "search": "",
+      "filters": [],
+      "include": [],
+      "exclude": [],
+      "select": [],
+    }),
+  },
+});
+if(!res.ok){
+  throw new Error("Failed to fetch calibradores");
+}
+
+  }catch(error){
+    toast.error("Error al listar los calibradores:", error);
+    return [];
+  }
+}
+
+useEffect(() => {
+  listar();
+}, []);
+
+
+
+
+
   return (
     <p className="flex items-baseline gap-1.5 leading-3.5">
       <span className="shrink-0 text-[8px] font-bold uppercase tracking-[0.12em] text-ink-faint">{etiqueta}</span>
