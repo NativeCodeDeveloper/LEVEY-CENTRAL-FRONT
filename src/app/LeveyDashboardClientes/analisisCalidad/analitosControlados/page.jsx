@@ -35,7 +35,7 @@ export default function PaginaAnalitosControlados() {
   const CLASE_CONTROL = `h-12 w-full rounded-xl border border-line bg-white shadow-[0_2px_8px_rgb(15_23_42_/_0.06)] outline-none transition-all duration-300 ${EASE_PREMIUM} hover:border-line-strong placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-4 focus-visible:ring-status-info/10`;
 
   return (
-    <div className="min-h-dvh bg-canvas px-5 pb-12 pt-8 text-ink sm:px-8 lg:px-10">
+    <div className="min-h-dvh bg-[#f8f9fb] px-5 pb-12 pt-8 text-ink sm:px-8 lg:px-10">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <header>
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]">

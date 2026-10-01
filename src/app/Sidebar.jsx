@@ -44,7 +44,7 @@ const grupos = [
 
 
       { etiqueta: "Tecnicas - Analitos", icono: "analitos",
-          href: "/LeveyDashboardClientes/gestionLevey/tecnicas",
+          href: "/LeveyDashboardClientes/gestionLevey/analitos",
       },
       { etiqueta: "Matriz Biologica", icono: "matriz",
           href: "/LeveyDashboardClientes/gestionLevey/matriz",
