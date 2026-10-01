@@ -15,6 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useClerk, useOrganization, useUser } from "@clerk/nextjs";
 
 const grupos = [
   {
@@ -23,7 +24,7 @@ const grupos = [
     iconoRiel: "reglas",
     items: [
       { etiqueta: "Registro QC", href: "/LeveyDashboardClientes/analisisCalidad/registro", icono: "registro" },
-      { etiqueta: "Analitos Controlados", href: "/LeveyDashboardClientes/analisisCalidad/analitosControlados", icono: "controles" },
+      { etiqueta: "Tecnicas Controladas", href: "/LeveyDashboardClientes/analisisCalidad/analitosControlados", icono: "controles" },
       { etiqueta: "Controles", href: "/LeveyDashboardClientes/analisisCalidad/controles", icono: "controlesQc" },
       { etiqueta: "Calibradores", href: "/LeveyDashboardClientes/analisisCalidad/calibradores", icono: "calibradores" },
       { etiqueta: "Control de Pares", href: "/LeveyDashboardClientes/analisisCalidad/controlDePares", icono: "controlPares" },
@@ -42,8 +43,8 @@ const grupos = [
 
 
 
-      { etiqueta: "Analitos", icono: "analitos",
-          href: "/LeveyDashboardClientes/gestionLevey/analitos",
+      { etiqueta: "Tecnicas - Analitos", icono: "analitos",
+          href: "/LeveyDashboardClientes/gestionLevey/tecnicas",
       },
       { etiqueta: "Matriz Biologica", icono: "matriz",
           href: "/LeveyDashboardClientes/gestionLevey/matriz",
@@ -52,6 +53,8 @@ const grupos = [
         },
         { etiqueta: "Acciones correctivas", icono: "acciones" , href: "/LeveyDashboardClientes/gestionLevey/accionesCorrectivas"},
         { etiqueta: "Proveedores", icono: "proveedores", href: "/LeveyDashboardClientes/gestionLevey/proveedores", },
+        { etiqueta: "Ubicaciones", icono: "ubicaciones", href: "/LeveyDashboardClientes/gestionLevey/ubicacionesLaboratorio", },
+
         { etiqueta: "Analizadores Equipos", icono: "analizadores" },
         { etiqueta: "Informacion ", icono: "informacion" },
         { etiqueta: "Reglas de Westgard ", icono: "westgard" },
@@ -86,6 +89,7 @@ const trazosPorIcono = {
   acciones: <><rect x="6" y="4" width="12" height="16" rx="2" /><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" /><path d="M9 12l2 2 4-4" /></>,
   bitacora: <><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v18H7.5A2.5 2.5 0 0 0 5 22.5" /><path d="M5 4.5v16" /></>,
   proveedores: <><rect x="2" y="7" width="12" height="9" /><path d="M14 10h4l3 3v3h-7" /><circle cx="6" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" /></>,
+  ubicaciones: <><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0z" /><circle cx="12" cy="10" r="2.5" /></>,
   usuarios: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c1-4 4-6 7-6s6 2 7 6" /></>,
   roles: <><circle cx="8" cy="15" r="3.5" /><path d="M10.5 12.5L19 4" /><path d="M16 7l2 2" /><path d="M13.5 9.5l2 2" /></>,
   perfiles: <><path d="M4 6h9M17 6h3M4 18h3M9 18h11" /><circle cx="14" cy="6" r="2" /><circle cx="7" cy="18" r="2" /></>,
@@ -144,12 +148,12 @@ function filtrarItems(items, termino) {
 
 function RielDeIconos({ grupoActivoId, alSeleccionarGrupo }) {
   return (
-    <div className="flex w-16 shrink-0 flex-col items-center gap-2 border-r border-sidebar-border bg-sidebar-bg px-2 pb-5 pt-[22px]">
-      <div className="mb-3 flex size-9 items-center justify-center">
+    <div className="flex h-full min-h-0 w-16 shrink-0 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto overscroll-contain border-r border-sidebar-border bg-sidebar-bg px-2 pb-5 pt-[22px]">
+      <div className="mb-3 flex size-9 shrink-0 items-center justify-center">
         <Image src="/logopequeñolevey.png" alt="LeveyQC" width={512} height={512} priority className="h-auto w-8 object-contain" />
       </div>
 
-      <nav className="flex flex-col items-center gap-1.5" aria-label="Secciones">
+      <nav className="flex shrink-0 flex-col items-center gap-1.5" aria-label="Secciones">
         <Link
           href="/LeveyDashboardClientes"
           aria-label="Notificaciones"
@@ -257,6 +261,10 @@ function ItemDePanel({ item, pathname, grupoAbierto, alternarGrupo, colapsado, o
 
 function PanelDeDetalle({ grupo, colapsado, alColapsar, onNavegar }) {
   const pathname = usePathname();
+  const { isLoaded: usuarioCargado, user: usuario } = useUser();
+  const { isLoaded: institucionCargada, organization: institucion } = useOrganization();
+  const { openUserProfile: abrirPerfilUsuario } = useClerk();
+  const nombreUsuario = usuario?.fullName || usuario?.username || "Usuario";
   const [grupoAbierto, setGrupoAbierto] = useState("Controles");
   const [busqueda, setBusqueda] = useState("");
 
@@ -270,9 +278,9 @@ function PanelDeDetalle({ grupo, colapsado, alColapsar, onNavegar }) {
   );
 
   return (
-    <div className={`flex h-full flex-col border-r border-sidebar-border bg-sidebar-bg transition-[width] duration-300 ${colapsado ? "w-16" : "w-64"}`}>
+    <div className={`flex h-full min-h-0 shrink-0 flex-col overflow-x-hidden overflow-y-auto overscroll-contain border-r border-sidebar-border bg-sidebar-bg transition-[width] duration-300 ${colapsado ? "w-16" : "w-64"}`}>
       {colapsado ? (
-        <div className="flex justify-center pb-4 pt-[22px]">
+        <div className="flex shrink-0 justify-center pb-4 pt-[22px]">
           <button
             type="button"
             onClick={alColapsar}
@@ -286,11 +294,40 @@ function PanelDeDetalle({ grupo, colapsado, alColapsar, onNavegar }) {
         </div>
       ) : (
         <>
-          <div className="flex justify-center px-4 pb-4 pt-[22px]">
-            <Image src="/leveayqclogo.png" alt="Levey Quality Control" width={1600} height={696} priority className="h-auto w-[150px] object-contain" />
+          <div className="flex shrink-0 flex-col items-center gap-3 px-5 pb-6 pt-7" aria-busy={!usuarioCargado}>
+            <button
+              type="button"
+              onClick={() => abrirPerfilUsuario()}
+              disabled={!usuarioCargado || !usuario}
+              aria-label="Gestionar foto de perfil y cuenta"
+              title="Gestionar mi perfil"
+              className="group relative flex size-36 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-sidebar-border bg-sidebar-hover-bg ring-4 ring-white/5 transition hover:ring-white/20 focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-sidebar-text disabled:cursor-default"
+            >
+              {usuarioCargado && usuario?.imageUrl ? (
+                <Image
+                  src={usuario.imageUrl}
+                  alt={`Foto de ${nombreUsuario}`}
+                  width={144}
+                  height={144}
+                  unoptimized
+                  className="size-full rounded-full object-cover"
+                />
+              ) : (
+                <IconoItem nombre="usuarios" className="size-14 text-sidebar-text-muted" />
+              )}
+              <span aria-hidden="true" className="absolute inset-x-0 bottom-0 bg-black/60 py-2 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">Editar perfil</span>
+            </button>
+            <div className="w-full space-y-1.5 text-center">
+              <p className="break-words text-[15px] font-semibold leading-5 text-sidebar-text">
+                {usuarioCargado ? nombreUsuario : "Cargando usuario…"}
+              </p>
+              <p className="break-words text-xs leading-5 text-sidebar-text-muted" aria-busy={!institucionCargada}>
+                {institucionCargada ? institucion?.name || "Sin institución activa" : "Cargando institución…"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between px-4 pb-3">
+          <div className="flex shrink-0 items-center justify-between px-4 pb-3">
             <p className="m-0 text-[15px] font-semibold text-sidebar-text">{grupo.titulo}</p>
             <button
               type="button"
@@ -319,7 +356,7 @@ function PanelDeDetalle({ grupo, colapsado, alColapsar, onNavegar }) {
         </>
       )}
 
-      <nav className={`flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-4 ${colapsado ? "items-center px-2" : ""}`} aria-label={grupo.titulo}>
+      <nav className={`flex shrink-0 flex-col gap-1 px-3 pb-4 ${colapsado ? "items-center px-2" : ""}`} aria-label={grupo.titulo}>
         {itemsVisibles.length === 0 ? (
           <p className="mt-2 px-1 text-[12px] text-sidebar-text-faint">Sin resultados para &quot;{busqueda}&quot;.</p>
         ) : (
@@ -383,7 +420,7 @@ export default function Sidebar() {
       ) : null}
 
       <aside
-        className={`sticky top-0 z-50 flex h-screen shrink-0 transition-transform duration-300 max-[860px]:fixed max-[860px]:inset-y-0 max-[860px]:left-0 max-[860px]:shadow-2xl ${
+        className={`sticky top-0 z-50 flex h-dvh max-h-dvh shrink-0 overflow-hidden transition-transform duration-300 max-[860px]:fixed max-[860px]:inset-y-0 max-[860px]:left-0 max-[860px]:shadow-2xl ${
           abiertoEnMovil ? "max-[860px]:translate-x-0" : "max-[860px]:-translate-x-full"
         }`}
         aria-label="Menu principal"

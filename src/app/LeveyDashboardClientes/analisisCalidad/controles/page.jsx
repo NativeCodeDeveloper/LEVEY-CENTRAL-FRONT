@@ -9,6 +9,7 @@ import {
     Search,
     SlidersHorizontal,
     Tags,
+    Trash2,
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {useAuth} from "@clerk/nextjs";
@@ -30,27 +31,10 @@ const ETIQUETAS_FILTRO = {
     estado: "Estado",
 };
 
-const OPCIONES_NIVELES = Object.freeze({
-    numerica: [
-        {valor: 1, etiqueta: "Nivel 1"},
-        {valor: 2, etiqueta: "Nivel 2"},
-        {valor: 3, etiqueta: "Nivel 3"},
-    ],
-    clinica: [
-        {valor: "bajo", etiqueta: "Bajo"},
-        {valor: "normal", etiqueta: "Normal"},
-        {valor: "patologico", etiqueta: "Patológico"},
-    ],
-});
-
 export default function PaginaControles() {
   const [estadoInputsIngreso, setEstadoInputsIngreso] = useState(false);
   const [estadoInputsEdicion, setEstadoInputsEdicion] = useState(false);
-  const [estadoInputsTecnicas, setEstadoInputsTecnicas] = useState(false);
-  const [controlTecnicas, setControlTecnicas] = useState(null);
-  const [analitosTecnicas, setAnalitosTecnicas] = useState([]);
-  const [tecnicasPorControl, setTecnicasPorControl] = useState({});
-  const [indiceListaAbiertaTecnicas, setIndiceListaAbiertaTecnicas] = useState(null);
+  const [popUpAnalitoNiveles, setPopUpAnalitoNiveles] = useState(false);
     const toasterRef = useRef(null);
     const API = process.env.NEXT_PUBLIC_API_URL;
     const {getToken,userId} = useAuth();
@@ -84,134 +68,6 @@ export default function PaginaControles() {
     return `${anio}-${mes}-${dia}`;
   };
 
-  // ------------- Acciones internas del popup de técnicas (gráficas) -------------
-  const abrirTecnicas = (control) => {
-    const analitosGuardados = tecnicasPorControl[control.id] ?? control.analitos;
-
-    setControlTecnicas({ ...control });
-    setAnalitosTecnicas(
-      analitosGuardados.map((analito) => {
-        const niveles = Array.isArray(analito.niveles) ? [...analito.niveles] : [];
-        const nomenclatura = analito.nomenclatura
-          ?? (niveles.some((nivel) => typeof nivel === "string") ? "clinica" : "numerica");
-
-        return { ...analito, nomenclatura, niveles };
-      })
-    );
-    setEstadoInputsTecnicas(true);
-  };
-  const cerrarTecnicas = () => setEstadoInputsTecnicas(false);
-
-  const anadirAnalitoTecnicas = () =>
-    setAnalitosTecnicas((filas) => [
-      ...filas,
-      { nombre: "", nomenclatura: "", niveles: [] },
-    ]);
-
-  const quitarAnalitoTecnicas = (indice) => {
-    setIndiceListaAbiertaTecnicas(null);
-    setAnalitosTecnicas((filas) => filas.filter((_, i) => i !== indice));
-  };
-
-  const renombrarAnalitoTecnicas = (indice, nombre) =>
-    setAnalitosTecnicas((filas) => filas.map((fila, i) => (i === indice ? { ...fila, nombre } : fila)));
-
-  const cambiarNomenclaturaTecnicas = (indice, nomenclatura) =>
-    setAnalitosTecnicas((filas) =>
-      filas.map((fila, i) =>
-        i === indice
-          ? { ...fila, nomenclatura, niveles: [] }
-          : fila
-      )
-    );
-
-  const alternarNivelTecnicas = (indice, nivel) =>
-    setAnalitosTecnicas((filas) =>
-      filas.map((fila, i) => {
-        if (i !== indice) return fila;
-
-        const seleccionados = fila.niveles.includes(nivel)
-          ? fila.niveles.filter((seleccionado) => seleccionado !== nivel)
-          : [...fila.niveles, nivel];
-        const ordenPermitido = (OPCIONES_NIVELES[fila.nomenclatura] ?? [])
-          .map((opcion) => opcion.valor);
-
-        return {
-          ...fila,
-          niveles: ordenPermitido.filter((valor) => seleccionados.includes(valor)),
-        };
-      })
-    );
-
-  const guardarTecnicas = () => {
-    const configuracionIncompleta = analitosTecnicas.length === 0 || analitosTecnicas.some(
-      (analito) =>
-        analito.nombre.trim() === ""
-        || !analito.nomenclatura
-        || analito.niveles.length === 0
-    );
-
-    if (configuracionIncompleta) {
-      return toasterRef.current?.show({
-        title: "Cada analito debe tener nombre, nomenclatura y al menos un nivel.",
-        variant: "error",
-        duration: 2200,
-      });
-    }
-
-    setTecnicasPorControl((controles) => ({
-      ...controles,
-      [controlTecnicas.id]: analitosTecnicas.map((analito) => ({
-        ...analito,
-        niveles: [...analito.niveles],
-      })),
-    }));
-    setEstadoInputsTecnicas(false);
-
-    return toasterRef.current?.show({
-      title: "Configuración de analitos guardada en esta sesión.",
-      variant: "success",
-      duration: 1800,
-    });
-  };
-
-  // Similitud de nombre para el buscador de analitos (sin mayúsculas ni tildes).
-  const normalizar = (texto) => texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  // Catálogo mock de analitos para el selector con buscador (nombre + abreviatura).
-  const ANALITOS_CATALOGO = [
-    { nombre: "Glucosa", abrev: "GLU" },
-    { nombre: "Colesterol", abrev: "COL" },
-    { nombre: "HDL", abrev: "HDL" },
-    { nombre: "LDL", abrev: "LDL" },
-    { nombre: "Bilirrubina total", abrev: "BT" },
-    { nombre: "Hemoglobina", abrev: "HGB" },
-    { nombre: "Urea", abrev: "URE" },
-    { nombre: "Creatinina", abrev: "CRE" },
-    { nombre: "Ácido úrico", abrev: "AU" },
-    { nombre: "Triglicéridos", abrev: "TRI" },
-    { nombre: "GOT", abrev: "GOT" },
-    { nombre: "GPT", abrev: "GPT" },
-    { nombre: "Proteínas totales", abrev: "PT" },
-    { nombre: "Albúmina", abrev: "ALB" },
-  ];
-
-  // Opciones del selector de analito de una fila: filtra por similitud (nombre
-  // o abreviatura) y excluye los ya asignados en otras filas.
-  const opcionesAnalitoTecnicas = (indice) => {
-    const termino = normalizar((analitosTecnicas[indice]?.nombre ?? "").trim());
-    const usados = analitosTecnicas
-      .filter((_, i) => i !== indice)
-      .map((fila) => normalizar(fila.nombre.trim()))
-      .filter(Boolean);
-    return ANALITOS_CATALOGO.filter((opcion) => {
-      const nombre = normalizar(opcion.nombre);
-      const abrev = normalizar(opcion.abrev);
-      return !usados.includes(nombre) && (!termino || nombre.includes(termino) || abrev.includes(termino));
-    });
-  };
-
-
     const [data, setData] = useState([])
 
     async function consultarControles(ruta, {mostrarCarga = false} = {}) {
@@ -230,6 +86,10 @@ export default function PaginaControles() {
                     "Authorization": `Bearer ${token}`
                 }
             })
+
+            if (solicitudId !== solicitudControlesRef.current) {
+                return;
+            }
 
             if (solicitudId !== solicitudControlesRef.current) {
                 return;
@@ -471,27 +331,92 @@ export default function PaginaControles() {
         return String(fechaHora).split("T")[0];
     }
 
-    const CONTROLES = data.map((e)=>{
-      return {
-          id: e[0],
-          nombre: e[1],
-          proveedor: e[4],
-          lote: e[2],
-          creacion: obtenerFecha(e[12]),
-          matriz: e[6],
-          categoria: e[8],
-          stock: e[10],
-          ultimaModificacion: e[14],
-          caducidad: obtenerFecha(e[9]),
-          estado: estadoString(e[11]),
-          estadoActividad: Number(e[11]) === 1,
-          analitos: tecnicasPorControl[e[0]] ?? [
-              { nombre: "Glucosa", nomenclatura: "numerica", niveles: [1, 2, 3] },
-          ]
-      }
-  })
 
 
+    const controlesMap = new Map();
+
+    data.forEach((e) => {
+
+        const idControl = e[0];
+        const idAnalitoControl = e[16];
+        const nombreAnalito = e[17];
+        const nombreNivel = e[18];
+
+        // =========================================
+        // 1. CREAR CONTROL SI NO EXISTE
+        // =========================================
+        if (!controlesMap.has(idControl)) {
+
+            controlesMap.set(idControl, {
+                id: e[0],
+                nombre: e[1],
+                proveedor: e[4],
+                lote: e[2],
+                creacion: obtenerFecha(e[12]),
+                matriz: e[6],
+                categoria: e[8],
+                stock: e[10],
+                ultimaModificacion: e[13],
+                caducidad: obtenerFecha(e[9]),
+                estado: estadoString(e[11]),
+                estadoActividad: Number(e[11]) === 1,
+
+                analitos: []
+            });
+        }
+
+
+        // =========================================
+        // 2. OBTENER EL CONTROL
+        // =========================================
+        const control = controlesMap.get(idControl);
+
+
+        // =========================================
+        // 3. VERIFICAR SI EXISTE ANALITO
+        // =========================================
+        if (idAnalitoControl != null) {
+
+            // Buscar si ya agregamos este analito
+            let analito = control.analitos.find(
+                (a) => a.idAnalitoControl === idAnalitoControl
+            );
+
+
+            // =========================================
+            // 4. CREAR ANALITO SI NO EXISTE
+            // =========================================
+            if (!analito) {
+
+                analito = {
+                    idAnalitoControl: idAnalitoControl,
+                    nombre: nombreAnalito,
+                    niveles: []
+                };
+
+                control.analitos.push(analito);
+            }
+
+
+            // =========================================
+            // 5. AGREGAR NIVEL
+            // =========================================
+            if (nombreNivel != null) {
+
+                // Evita duplicados por seguridad
+                if (!analito.niveles.includes(nombreNivel)) {
+                    analito.niveles.push(nombreNivel);
+                }
+
+            }
+        }
+    });
+
+
+// =========================================
+// 6. CONVERTIR MAP A ARRAY
+// =========================================
+    const CONTROLES = Array.from(controlesMap.values());
 
 
 
@@ -1039,6 +964,237 @@ export default function PaginaControles() {
 
     const filtroActivo = Object.entries(filtros).find(([, valor]) => valor !== "");
 
+
+
+
+    function anadirNiveles(nuevoNivel) {
+        if (nuevoNivel === "" || nuevoNivel === null || nuevoNivel === undefined) {
+            return toasterRef.current?.show({
+                title: `Seleccione los nieveles de Medicion del Analito`,
+                variant: "error",
+                duration: 1000,
+            });
+        }
+        setNombresNiveles((niveles)=> [...niveles,nuevoNivel])
+        setNivelSeleccionado("");
+        return toasterRef.current?.show({
+            title: `Nivel de medicion añadido`,
+            variant: "success",
+            duration: 1000,
+        });
+    }
+
+    const [nivelSeleccionado, setNivelSeleccionado] = useState("");
+    const [nombresNiveles, setNombresNiveles] = useState([]);
+    const [idControl, setIdControl] = useState(null);
+    const [analitoId, setAnalitoId] = useState(null);
+    const [nombreControlAnadirNiveles, setNombreControlAnadirNiveles] = useState("");
+
+
+
+    async function insertarAnalitoyNiveles(
+      nombresNiveles,
+      analitoId,
+      idControl
+    ){
+      try {
+          const analitoControl = {
+              analitoId : analitoId,
+              idControl :idControl,
+              usuarioCreacion : userId
+
+          }
+          const body = {
+              analitoControl,
+              nombresNiveles
+          };
+
+        const token = await getToken();
+        const res = await fetch(`${API}/analitoControl`, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+            body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          toasterRef.current?.show({
+            title: "No fue posible insertar los Analitos y niveles al control indicado . Consulte a soporte.",
+            variant: "error",
+            duration: 1000,
+          });
+          return false;
+        }
+
+        const respuestaBackend = await res.json();
+
+        if (respuestaBackend.success) {
+          await limpiarFiltros();
+          setNombresNiveles([]);
+          setNivelSeleccionado("");
+          setAnalitoId(null);
+          toasterRef.current?.show({
+            title: `${respuestaBackend.message}`,
+            variant: "success",
+            duration: 1000,
+          });
+          return true;
+        }
+        if (!respuestaBackend.success) {
+          toasterRef.current?.show({
+            title: `${respuestaBackend.message}`,
+            variant: "error",
+            duration: 1000,
+          });
+          return false;
+        }
+      }catch (e) {
+        toasterRef.current?.show({
+          title: `Problema en el servidor. Consulte a soporte.`,
+          variant: "error",
+          duration: 1000,
+        });
+        return false;
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [dataAnalitos, setDataAnalitos] = useState([])
+    async function cargarAnalitos() {
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API}/analitos`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+
+            if (!res.ok) {
+                return toasterRef.current?.show({
+                    title: "No fue posible cargar las informacion. Contacte a soporte",
+                    variant: "error",
+                    duration: 1000,
+                });
+
+            } else {
+                const respuestaBackend = await res.json();
+                if (respuestaBackend.success) {
+                    setDataAnalitos(respuestaBackend.data);
+                    return;
+                }
+
+                if (!respuestaBackend.success) {
+                    return toasterRef.current?.show({
+                        title: `${respuestaBackend.message}`,
+                        variant: "error",
+                        duration: 1000,
+                    });
+                }
+            }
+
+        } catch (e) {
+            return toasterRef.current?.show({
+                title: `${e.message}`,
+                variant: "error",
+                duration: 1000,
+            });
+        }
+    }
+
+    useEffect(() => {
+        cargarAnalitos();
+    }, []);
+
+
+
+    const analitos = dataAnalitos.map((objeto) => {
+        return        {
+            id: objeto[3],
+            codigo: objeto[5],
+            nombre: objeto[4],
+            categoria: objeto[0],
+            muestra: objeto[2],
+            unidad: objeto[1],
+            rango: "70 – 100",
+            minimo: "70",
+            maximo: "100",
+            activo:objeto[6],
+            estado: objeto[6],
+            popupId: objeto[3],
+        }
+    })
+
+
+
+
+
+    async function eliminarAnalitoConttrol(idAnalitoControl) {
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API}/analitoControl/eliminar/${idAnalitoControl}`, {
+                method: "PATCH",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+
+            if (!res.ok) {
+                return toasterRef.current?.show({
+                    title: "No fue posible eliminar el analito. Consulte a soporte.",
+                    variant: "error",
+                    duration: 2000,
+                });
+
+            } else {
+
+                const respuestaBackend = await res.json();
+
+                if (respuestaBackend.success) {
+                    await cargarDatos();
+                    await limpiarFiltros();
+                    return  toasterRef.current?.show({
+                        title: `${respuestaBackend.message}`,
+                        variant: "success",
+                        duration: 2000,
+                    });
+                }
+
+                if (!respuestaBackend.success) {
+                    return toasterRef.current?.show({
+                        title: `${respuestaBackend.message}`,
+                        variant: "error",
+                        duration: 1500,
+                    });
+                }
+            }
+
+        } catch (e) {
+            return toasterRef.current?.show({
+                title: `${e.message}`,
+                variant: "error",
+                duration: 1000,
+            });
+        }
+    }
+
+
     return (
     <div className="min-h-dvh bg-canvas px-5 pb-12 pt-8 text-ink sm:px-8 lg:px-10">
         <Toaster ref={toasterRef} />
@@ -1290,17 +1446,26 @@ export default function PaginaControles() {
                 </td>
                 <td className="px-5 py-4 align-top">
                   {/* Cada analito con SUS propios niveles, en línea junto al nombre */}
-                  <ul className="flex w-[200px] flex-col gap-1.5">
+                  <ul className="flex w-full flex-col gap-1.5">
                     {c.analitos.map((a) => (
                       <li
-                        key={a.nombre}
-                        className="flex w-full items-center gap-2 rounded-lg border border-line-strong bg-white px-2.5 py-1.5 text-[12px] font-medium text-ink shadow-[0_1px_3px_rgb(15_23_42_/_0.08)]"
+                        key={a.idAnalitoControl}
+                        className="flex w-full items-start gap-2 rounded-lg border border-line-strong bg-white px-2.5 py-2 text-[12px] font-medium text-ink shadow-[0_1px_3px_rgb(15_23_42_/_0.08)]"
                       >
-                        <span className="size-1.5 shrink-0 rounded-full bg-status-info" aria-hidden="true" />
-                        <span className="min-w-0 truncate">{a.nombre}</span>
-                        <span className="ml-auto shrink-0 text-[10px] font-bold tabular-nums text-status-info">
+                        <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-status-info" aria-hidden="true" />
+                        <span className="min-w-0 flex-1 whitespace-normal break-words leading-4">{a.nombre}</span>
+                        <span className="ml-auto shrink-0 pt-0.5 text-[10px] font-bold tabular-nums text-status-info">
                           {a.niveles.length} {a.niveles.length === 1 ? "Nivel" : "Niveles"}
                         </span>
+                        <button
+                            onClick={() => eliminarAnalitoConttrol(a.idAnalitoControl)}
+                          type="button"
+                          aria-label={`Eliminar analito ${a.nombre}`}
+                          title="Eliminar analito"
+                          className="flex size-5 shrink-0 items-center justify-center rounded text-ink-faint transition-colors duration-150 hover:bg-red-50 hover:text-red-500 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink"
+                        >
+                          <Trash2 aria-hidden="true" className="size-2.5" strokeWidth={1.7} />
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -1324,7 +1489,11 @@ export default function PaginaControles() {
                     <button
                       type="button"
                       aria-label={`Añadir técnicas a ${c.nombre}`}
-                      onClick={() => abrirTecnicas(c)}
+                      onClick={() => {
+                          setPopUpAnalitoNiveles(true);
+                          setNombreControlAnadirNiveles(c.nombre);
+                          setIdControl(c.id);
+                      }}
                       className={`${CLASE_BTN_ACCION} hover:border-status-info hover:text-status-info`}
                     >
                       <CirclePlus aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.7} />
@@ -1745,256 +1914,114 @@ export default function PaginaControles() {
       ) : null}
       {/* ================== FIN POPUP DE EDICIÓN DE CONTROL ================== */}
 
-      {/* ==================================================================
-          INICIO POPUP DE TÉCNICAS — EXCLUSIVO DE ANALITOS Y NIVELES
-          Componente 100% gráfico: NO está conectado al backend.
-          Se abre desde el botón "Añadir Técnicas" de una fila y siempre
-          indica a qué control se le están añadiendo los analitos.
-          Cuando conectes la lógica:
-            - Abrir/cerrar: estado `estadoInputsTecnicas` (useState arriba).
-            - Control destino: estado `controlTecnicas`.
-            - Analitos y niveles por analito: estado `analitosTecnicas`.
-          ================================================================== */}
-      {estadoInputsTecnicas && controlTecnicas ? (
+      {popUpAnalitoNiveles ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="titulo-anadir-tecnicas"
+          aria-labelledby="titulo-analito-niveles"
         >
-          {/* Fondo clickeable para cerrar */}
           <button
             type="button"
             aria-label="Cerrar popup"
-            onClick={cerrarTecnicas}
+            onClick={() => setPopUpAnalitoNiveles(false)}
             className="absolute inset-0 cursor-default"
           />
 
-          <div className="relative max-h-[calc(100dvh-4rem)] w-[min(620px,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-line bg-white p-6 shadow-2xl">
-            {/* Encabezado: indica a qué control se le añaden analitos y niveles */}
-            <div className="flex items-start justify-between gap-4">
+          <div className="relative w-[min(680px,calc(100vw-2rem))] rounded-2xl border border-line bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
-                  Añadiendo analitos y niveles
-                </p>
-                <h2 id="titulo-anadir-tecnicas" className="mt-1 text-xl font-semibold tracking-[-0.025em] text-ink">
-                  Añadir Técnicas
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">Configuración</p>
+                <h2 id="titulo-analito-niveles" className="mt-1 text-xl font-semibold tracking-[-0.025em] text-ink">
+                  Analito y niveles
                 </h2>
                 <p className="mt-2 text-sm text-ink-muted">
-                  Control: <span className="font-semibold text-ink">{controlTecnicas.nombre}</span>
+                  Control seleccionado: <span className="font-semibold text-ink">{nombreControlAnadirNiveles} :{idControl}</span>
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={cerrarTecnicas}
-                aria-label="Cerrar"
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:border-status-alert hover:text-status-alert active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-              >
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
-                  <path d="M5 5l10 10M15 5L5 15" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Analitos asociados: cada analito recibe SUS propios niveles (hasta 3) */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-                  Analitos asociados
-                </p>
+              <div className="flex shrink-0 items-center gap-2">
+                <button type="button" onClick={() => setPopUpAnalitoNiveles(false)} className={CLASE_BTN_MODAL_SECUNDARIO}>
+                  Cancelar
+                </button>
                 <button
-                  type="button"
-                  onClick={anadirAnalitoTecnicas}
-                  className={`inline-flex h-8 items-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[12px] font-medium text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:border-status-info hover:text-status-info active:scale-[0.97] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                >
-                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
-                    <path d="M10 4v12M4 10h12" />
-                  </svg>
-                  Añadir analito
+
+                    type="button"
+                    onClick={async () => {
+                        const seGuardo = await insertarAnalitoyNiveles(
+                            nombresNiveles,
+                            analitoId,
+                            idControl
+                        );
+                        if (seGuardo) {
+                            setPopUpAnalitoNiveles(false);
+                        }
+                    }} className={CLASE_BTN_MODAL_PRINCIPAL}>
+                  Guardar
                 </button>
               </div>
+            </div>
 
-              <div className="mt-3 flex flex-col gap-3">
-                {analitosTecnicas.map((fila, indice) => (
-                  <div key={indice} className="rounded-xl border border-line bg-canvas/60 p-3.5">
-                    <div className="flex items-center gap-2">
-                      {/* Selector de analito con buscador (combobox gráfico) */}
-                      <div
-                        className="relative flex-1"
-                        onBlur={(evento) => {
-                          if (!evento.currentTarget.contains(evento.relatedTarget)) setIndiceListaAbiertaTecnicas(null);
-                        }}
-                        onKeyDown={(evento) => {
-                          if (evento.key === "Escape") setIndiceListaAbiertaTecnicas(null);
-                        }}
-                      >
-                        <input
-                          value={fila.nombre}
-                          onChange={(evento) => {
-                            renombrarAnalitoTecnicas(indice, evento.target.value);
-                            setIndiceListaAbiertaTecnicas(indice);
-                          }}
-                          onFocus={() => setIndiceListaAbiertaTecnicas(indice)}
-                          type="text"
-                          placeholder="Buscar analito…"
-                          aria-label={`Buscar analito ${indice + 1}`}
-                          role="combobox"
-                          aria-expanded={indiceListaAbiertaTecnicas === indice}
-                          aria-controls={`lista-analito-tecnicas-${indice}`}
-                          className={`${CLASE_CONTROL} pr-9`}
-                        />
-                        <button
-                          type="button"
-                          tabIndex={-1}
-                          aria-label="Desplegar opciones"
-                          onClick={() => setIndiceListaAbiertaTecnicas(indiceListaAbiertaTecnicas === indice ? null : indice)}
-                          className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-ink-faint transition-colors duration-150 hover:text-ink-muted"
-                        >
-                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M5 7.5l5 5 5-5" />
-                          </svg>
-                        </button>
-
-                        {indiceListaAbiertaTecnicas === indice ? (
-                          <ul
-                            id={`lista-analito-tecnicas-${indice}`}
-                            role="listbox"
-                            aria-label={`Opciones de analito ${indice + 1}`}
-                            className="absolute inset-x-0 top-[calc(100%+4px)] z-10 max-h-48 overflow-y-auto rounded-xl border border-line bg-white p-1 shadow-[0_16px_40px_rgb(15_23_42_/_0.16)]"
-                          >
-                            {opcionesAnalitoTecnicas(indice).length === 0 ? (
-                              <li className="px-3 py-2.5 text-[12px] text-ink-faint">
-                                Sin resultados para tu búsqueda
-                              </li>
-                            ) : (
-                              opcionesAnalitoTecnicas(indice).map((opcion) => (
-                                <li key={opcion.nombre} role="option" aria-selected={fila.nombre === opcion.nombre}>
-                                  <button
-                                    type="button"
-                                    onMouseDown={(evento) => evento.preventDefault()}
-                                    onClick={() => {
-                                      renombrarAnalitoTecnicas(indice, opcion.nombre);
-                                      setIndiceListaAbiertaTecnicas(null);
-                                    }}
-                                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 ${
-                                      fila.nombre === opcion.nombre
-                                        ? "bg-status-info-soft font-medium text-status-info"
-                                        : "text-ink hover:bg-canvas"
-                                    }`}
-                                  >
-                                    <span className="min-w-0 truncate">
-                                      {opcion.nombre} <span className="font-bold text-status-info">- {opcion.abrev}</span>
-                                    </span>
-                                    {fila.nombre === opcion.nombre ? (
-                                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-3.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 10.5l4 4 8-9" />
-                                      </svg>
-                                    ) : null}
-                                  </button>
-                                </li>
-                              ))
-                            )}
-                          </ul>
-                        ) : null}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => quitarAnalitoTecnicas(indice)}
-                        aria-label={`Quitar ${fila.nombre || "analito"}`}
-                        title="Quitar analito"
-                        className={`flex size-11 shrink-0 items-center justify-center rounded-xl border border-line-strong bg-white text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:border-status-alert hover:text-status-alert active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                      >
-                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
-                          <path d="M5 5l10 10M15 5L5 15" />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="mt-3 grid gap-3 border-t border-line pt-3 sm:grid-cols-[9rem_1fr] sm:items-end">
-                      <div>
-                        <label
-                          htmlFor={`nomenclatura-analito-${indice}`}
-                          className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint"
-                        >
-                          Nomenclatura
-                        </label>
-                        <select
-                          id={`nomenclatura-analito-${indice}`}
-                          value={fila.nomenclatura}
-                          onChange={(evento) => cambiarNomenclaturaTecnicas(indice, evento.target.value)}
-                          aria-label={`Nomenclatura del analito ${fila.nombre || indice + 1}`}
-                          className={`h-8 w-full rounded-md border border-line bg-white px-2 text-[11px] font-semibold text-ink-muted shadow-[0_1px_2px_rgb(15_23_42_/_0.04)] outline-none transition-[border-color,box-shadow] duration-150 ${EASE_PREMIUM} hover:border-line-strong focus-visible:border-status-info focus-visible:ring-2 focus-visible:ring-status-info/10`}
-                        >
-                          <option value="" disabled>Seleccionar</option>
-                          <option value="numerica">Numérica</option>
-                          <option value="clinica">Clínica</option>
-                        </select>
-                      </div>
-
-                      <fieldset>
-                        <div className="mb-1.5 flex items-center justify-between gap-2">
-                          <legend className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint">
-                            Niveles
-                          </legend>
-                          <span className="text-[10px] font-medium text-ink-faint">
-                            {fila.niveles.length}/3 seleccionados
-                          </span>
-                        </div>
-                        {fila.nomenclatura ? (
-                          <div className="grid grid-cols-3 gap-1.5">
-                            {OPCIONES_NIVELES[fila.nomenclatura].map((opcion) => {
-                              const activo = fila.niveles.includes(opcion.valor);
-                              return (
-                                <button
-                                  key={opcion.valor}
-                                  type="button"
-                                  onClick={() => alternarNivelTecnicas(indice, opcion.valor)}
-                                  aria-pressed={activo}
-                                  className={`h-8 min-w-0 rounded-md border px-2 text-[10px] font-semibold transition-[background-color,border-color,color,box-shadow] duration-150 ${EASE_PREMIUM} ${
-                                    activo
-                                      ? "border-status-info/40 bg-status-info-soft text-status-info shadow-[0_1px_2px_rgb(91_62_200_/_0.08)]"
-                                      : "border-line bg-white text-ink-faint hover:border-line-strong hover:text-ink-muted"
-                                  } focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                                >
-                                  {opcion.etiqueta}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="flex h-8 items-center rounded-md border border-dashed border-line px-2.5 text-[10px] font-medium text-ink-faint">
-                            Selecciona una nomenclatura
-                          </div>
-                        )}
-                      </fieldset>
-                    </div>
-                  </div>
-                ))}
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="selector-analito" className={CLASE_ETIQUETA}>Analito</label>
+                <select
+                    onChange={(e) => setAnalitoId(e.target.value)}
+                    id="selector-analito" defaultValue="" className={CLASE_CONTROL}>
+                  <option value="" disabled>Seleccionar analito</option>
+                    {
+                        analitos.map((analito) => {
+                            return(
+                                <option key={analito.id} value={analito.id}>{analito.nombre}{" "}-{" "}{analito.unidad}</option>
+                            )
+                        })
+                    }
+                </select>
+              </div>
+              <div>
+                <label htmlFor="selector-nivel" className={CLASE_ETIQUETA}>Nivel</label>
+                <div className="flex items-center gap-2">
+                  <select
+                      onChange={(e) => setNivelSeleccionado(e.target.value)}
+                      id="selector-nivel" defaultValue="" className={`${CLASE_CONTROL} min-w-0 flex-1`}>
+                    <option value="" disabled>Seleccionar nivel</option>
+                    <option value="NIVEL1">NIVEL 1</option>
+                    <option value="NIVEL2">NIVEL 2</option>
+                    <option value="NIVEL3">NIVEL 3</option>
+                      <option value="NORMAL">NORMAL</option>
+                      <option value="PATOLOGICO">PATOLOGICO</option>
+                  </select>
+                  <button
+                      onClick={() => anadirNiveles(nivelSeleccionado)}
+                    type="button"
+                    className={`inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-white px-3 text-[12px] font-semibold text-ink-muted shadow-[0_1px_2px_rgb(15_23_42_/_0.05)] transition-[background-color,border-color,color,box-shadow] duration-200 ${EASE_PREMIUM} hover:border-ink-faint hover:bg-[#f8f9fb] hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+                  >
+                    <CirclePlus aria-hidden="true" className="size-3.5" strokeWidth={1.8} />
+                    Añadir Nivel
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Pie del popup de técnicas */}
-            <div className="mt-7 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={cerrarTecnicas}
-                className={CLASE_BTN_MODAL_SECUNDARIO}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={guardarTecnicas}
-                className={CLASE_BTN_MODAL_PRINCIPAL}
-              >
-                <Save aria-hidden="true" className="size-4" strokeWidth={1.8} />
-                Guardar
-              </button>
+            <div className="mt-5 rounded-xl border border-line bg-canvas/60 p-3.5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
+                Niveles añadidos
+              </p>
+              <ul className="flex max-h-40 flex-col gap-1.5 overflow-y-auto pr-1">
+                  {
+                      nombresNiveles.map((nombre, index) => {
+                          return(
+                              <li key={index} className="flex items-center justify-between rounded-lg border border-line bg-white px-3 py-2 text-[12px] font-medium text-ink shadow-[0_1px_2px_rgb(15_23_42_/_0.04)]">
+                                  <span>{nombre}</span>
+                              </li>
+                          )
+                      })
+                  }
+
+              </ul>
             </div>
           </div>
         </div>
       ) : null}
-      {/* ================== FIN POPUP DE TÉCNICAS ================== */}
     </div>
   );
 }

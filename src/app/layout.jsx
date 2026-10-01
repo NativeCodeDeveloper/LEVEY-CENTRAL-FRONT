@@ -5,6 +5,7 @@ import AppShell from "./components/AppShell";
 import "./globals.css";
 import Script from "next/script";
 
+
 // El layout se mantiene como Server Component (puede exportar `metadata`).
 // La navegacion interactiva (expandir/colapsar, ruta activa) vive en
 // Sidebar.jsx, que si es Client Component.
@@ -37,6 +38,9 @@ export default function RootLayout({ children }) {
             src="//unpkg.com/react-grab/dist/index.global.js"
             crossOrigin="anonymous"
             strategy="beforeInteractive"
+            data-options={JSON.stringify(
+              { activationKey: "g", activationMode: "toggle", allowActivationInsideInput: false, maxContextLines: 10 }
+            )}
           />
         )}
         {process.env.NODE_ENV === "development" && (
