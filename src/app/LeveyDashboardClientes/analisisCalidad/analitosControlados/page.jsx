@@ -1,284 +1,407 @@
-"use client";
-
+"use client"
 import { ChevronDown, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {useEffect, useState} from "react";
+import {useAuth} from "@clerk/nextjs";
+import Toaster from "@/components/ui/toast";
+import { useRef } from "react";
+import {
+    listarAnalitosyNiveles,
+    listarPorSimilitudDeNombre,
+    listarPorLoteSimilar,
+    listarNivelesInactivos,
+    listarNivelesActivos,
+    listarSegunAnalitos,
+    buscarEntreFechas
+} from "@/app/LeveyDashboardClientes/servicesBackend/analitosControlados"
+import {listarAnalitos} from "@/app/LeveyDashboardClientes/servicesBackend/tecnicasAnalitos";
+
 
 export default function PaginaAnalitosControlados() {
-  const [popupCalibrar, setPopupCalibrar] = useState(false);
-  const [analitoSeleccionado, setAnalitoSeleccionado] = useState(null);
-  const [calibradorSeleccionado, setCalibradorSeleccionado] = useState("");
-  const [anotacion, setAnotacion] = useState("");
-  const [estadoCalibracion, setEstadoCalibracion] = useState("calibrado");
-  const [calibraciones, setCalibraciones] = useState({
-    glucosa: { calibrador: "Human1 Multicalibrador", estado: "calibrado", anotacion: "" },
-    colesterol: { calibrador: "RADOX Monocalibrador", estado: "calibrado", anotacion: "" },
-  });
-  const dialogoCalibrar = useRef(null);
-
-  useEffect(() => {
-    if (popupCalibrar) {
-      dialogoCalibrar.current?.showModal();
-    } else {
-      dialogoCalibrar.current?.close();
-    }
-  }, [popupCalibrar]);
-
-  function abrirCalibracion(analito) {
-    setAnalitoSeleccionado(analito);
-    setCalibradorSeleccionado(calibraciones[analito].calibrador);
-    setAnotacion(calibraciones[analito].anotacion);
-    setEstadoCalibracion(calibraciones[analito].estado);
-    setPopupCalibrar(true);
-  }
-
   const EASE_PREMIUM = "ease-[cubic-bezier(0.22,1,0.36,1)]";
-  const CLASE_CONTROL = `h-12 w-full rounded-xl border border-line bg-white shadow-[0_2px_8px_rgb(15_23_42_/_0.06)] outline-none transition-all duration-300 ${EASE_PREMIUM} hover:border-line-strong placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-4 focus-visible:ring-status-info/10`;
+  const CLASE_CONTROL = `h-9 w-full rounded-lg border border-line bg-canvas shadow-sm outline-none transition-colors duration-200 ${EASE_PREMIUM} hover:border-line-strong placeholder:text-ink-faint focus-visible:border-status-info focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-status-info/10 motion-reduce:transition-none`;
+    const { getToken, isLoaded } = useAuth();
+    const toasterRef = useRef();
 
-  return (
-    <div className="min-h-dvh bg-[#f8f9fb] px-5 pb-12 pt-8 text-ink sm:px-8 lg:px-10">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+
+    const [data, setData] = useState([]);
+    const [dataTecnicas, setDataTecnicas] = useState([]);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        let vigente = true;
+
+        async function cargarTecnicasDisponibles() {
+            try {
+                const token = await getToken();
+                if (!vigente) return;
+                const respuestaBackend = await listarAnalitos(token);
+                if (!vigente) return;
+
+                if (!respuestaBackend.success) {
+                    throw new Error(respuestaBackend.message);
+                }
+                setDataTecnicas(respuestaBackend.data);
+            } catch (error) {
+                if (!vigente) return;
+                toasterRef.current?.show({
+                    title: error.message,
+                    variant: "error",
+                    duration: 1000,
+                });
+            }
+        }
+
+        cargarTecnicasDisponibles();
+        return () => {
+            vigente = false;
+        };
+    }, [getToken, isLoaded]);
+
+    const analitos = dataTecnicas.map((analitos) => {
+        return {
+            categoria: analitos[0],
+            unidadMedida: analitos[1],
+            matriz: analitos[2],
+            idAnalito: analitos[3],
+            nombreAnalito: analitos[4],
+            abreviacion: analitos[5],
+            activo: analitos[6]
+        }
+    })
+
+
+    const [analitoSeleccionado, setAnalitoSeleccionado] = useState("");
+    const [nombreCo, setNombreCo] = useState("");
+    const [lote, setLote] = useState("");
+    const [estado, setEstado] = useState("");
+    const [fechaInicio, setFechaInicio] = useState("");
+    const [fechaFin, setFechaFin] = useState("");
+
+    function actualizarFiltro(tipo, valor) {
+        setAnalitoSeleccionado(tipo === "tecnica" ? valor : "");
+        setLote(tipo === "lote" ? valor : "");
+        setNombreCo(tipo === "control" ? valor : "");
+        setEstado(tipo === "estado" ? valor : "");
+
+        if (tipo === "fechaInicio") {
+            setFechaInicio(valor);
+        } else if (tipo === "fechaFin") {
+            setFechaFin(valor);
+        } else {
+            setFechaInicio("");
+            setFechaFin("");
+        }
+    }
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        let vigente = true;
+
+        async function cargarListadoFiltrado() {
+            try {
+                const token = await getToken();
+                if (!vigente) return;
+
+                let respuestaBackend;
+                if (analitoSeleccionado) {
+                    respuestaBackend = await listarSegunAnalitos(token, analitoSeleccionado);
+                } else if (lote.trim()) {
+                    respuestaBackend = await listarPorLoteSimilar(token, lote.trim());
+                } else if (nombreCo.trim()) {
+                    respuestaBackend = await listarPorSimilitudDeNombre(token, nombreCo.trim());
+                } else if (estado === "1") {
+                    respuestaBackend = await listarNivelesActivos(token);
+                } else if (estado === "2") {
+                    respuestaBackend = await listarNivelesInactivos(token);
+                } else if (fechaInicio && fechaFin) {
+                    respuestaBackend = await buscarEntreFechas(token, fechaInicio, fechaFin);
+                } else {
+                    respuestaBackend = await listarAnalitosyNiveles(token);
+                }
+
+                if (!vigente) return;
+                if (!respuestaBackend.success) {
+                    throw new Error(respuestaBackend.message);
+                }
+                if (!Array.isArray(respuestaBackend.data)) {
+                    throw new Error("El backend no devolvió un listado válido.");
+                }
+
+                setData(respuestaBackend.data);
+                if (analitoSeleccionado || lote.trim() || nombreCo.trim() || estado || (fechaInicio && fechaFin)) {
+                    toasterRef.current?.show({
+                        title: respuestaBackend.message,
+                        variant: "success",
+                        duration: 4000,
+                    });
+                }
+            } catch (error) {
+                if (!vigente) return;
+                toasterRef.current?.show({
+                    title: error.message,
+                    variant: "error",
+                    duration: 1000,
+                });
+            }
+        }
+
+        cargarListadoFiltrado();
+        return () => {
+            vigente = false;
+        };
+    }, [analitoSeleccionado, lote, nombreCo, estado, fechaInicio, fechaFin, getToken, isLoaded]);
+
+    const AnalitosControlados = data.map((item) => {
+        return {
+            idNivelAnalitoControl: item[0],
+            nombreNivel: item[1],
+            activo: item[2],
+
+            idAnalitoControl: item[3],
+
+            idControl: item[4],
+            nombreControl: item[5],
+
+            analitoId: item[6],
+            idAnalito: item[7],
+            nombreAnalito: item[8],
+            lote: item[9],
+            estadoControl: item[10],
+            fecha: item[11],
+        };
+    });
+
+
+
+    function estadoString(a) {
+        return a ? "Activo" : "Desactivado";
+    }
+
+
+    const formatearFecha = (fecha) => {
+        if (!fecha) return "";
+        const date = new Date(fecha);
+        return date.toLocaleDateString("es-CL", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        });
+    };
+
+
+
+
+
+
+
+
+    return (
+    <div className="min-h-dvh bg-canvas px-4 pb-8 pt-5 text-ink sm:px-6 lg:px-8">
+        <Toaster ref={toasterRef} />
+
+        <div className="flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
         <header>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-status-info">
             ANALISIS QC / ANALITOS CONTROLADOS
           </p>
-          <h1 className="mt-2 text-[28px] font-bold tracking-[-0.035em] text-ink sm:text-[34px]">
+          <h1 className="mt-1.5 text-[22px] font-semibold leading-tight tracking-[-0.035em] text-ink sm:text-[26px]">
             Analitos Controlados
           </h1>
         </header>
 
-        <div className="flex flex-wrap gap-3 sm:justify-end">
-          <button
-            type="button"
-            className={`inline-flex h-12 items-center justify-center rounded-xl border border-line-strong bg-white px-5 text-sm font-medium text-ink shadow-[0_1px_2px_rgb(15_23_42_/_0.06)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info/40 hover:bg-surface-muted hover:shadow-[0_10px_24px_rgb(15_23_42_/_0.10)] active:translate-y-0 active:scale-[0.98] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <Link
+            href="/LeveyDashboardClientes/gestionLevey/analitos"
+            className={`inline-flex h-9 w-fit shrink-0 items-center justify-center rounded-lg border border-line bg-white px-3.5 text-xs font-semibold text-ink-muted shadow-sm transition-colors duration-200 ${EASE_PREMIUM} hover:border-status-info/40 hover:bg-status-info-soft hover:text-status-info active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none`}
           >
-            Ver Analitos
-          </button>
-          <button
-            type="button"
-            className={`inline-flex h-12 items-center justify-center rounded-xl bg-black px-5 text-sm font-medium text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.14)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_10px_24px_rgb(91_62_200_/_0.35)] active:translate-y-0 active:scale-[0.98] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
+            Técnicas Disponibles
+          </Link>
+          <Link
+            href="/LeveyDashboardClientes/analisisCalidad/controles"
+            className={`inline-flex h-9 w-fit shrink-0 items-center justify-center rounded-lg bg-ink px-3.5 text-xs font-semibold text-white shadow-sm transition-colors duration-200 ${EASE_PREMIUM} hover:bg-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none`}
           >
-            Ingresar Control
-          </button>
+            Ir a Controles
+          </Link>
         </div>
       </div>
 
-      <div className="mt-10 grid max-w-[1200px] gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div>
-          <label htmlFor="nombre-control" className="mb-2 block text-sm font-medium text-ink-muted">
-            Nombre del control
+      <div className="mt-4 rounded-xl border border-line bg-white p-3.5 shadow-sm">
+        <div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="min-w-0">
+          <label htmlFor="tecnica-controlada" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+            Técnica controlada
           </label>
           <div className="relative">
             <select
-              id="nombre-control"
-              defaultValue=""
-              className={`${CLASE_CONTROL} appearance-none px-4 pr-9 text-sm font-medium text-ink`}
+              id="tecnica-controlada"
+              name="tecnicaControlada"
+              value={analitoSeleccionado}
+              className={`${CLASE_CONTROL} appearance-none px-3 pr-8 text-xs font-medium text-ink`}
+              onChange={e => actualizarFiltro("tecnica", e.target.value)}
             >
-              <option value="">Todos los controles</option>
-              <option value="glucosa">BioRad Glucosa</option>
-              <option value="colesterol">BioRad Colesterol</option>
+              <option value="">Todas las técnicas</option>
+                {
+                    analitos.map(analito => (
+                      <option key={analito.idAnalito} value={analito.idAnalito}>
+                        {analito.nombreAnalito} {"  - "}{analito.unidadMedida}
+                      </option>
+                    ))
+                }
             </select>
-            <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
           </div>
         </div>
-        <div>
-          <label htmlFor="nombre-analito" className="mb-2 block text-sm font-medium text-ink-muted">
-            Nombre del analito
+        <div className="min-w-0">
+          <label htmlFor="numero-lote" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+            Número de lote
           </label>
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
             <input
-              id="nombre-analito"
+              value={lote}
+              onChange={e => actualizarFiltro("lote", e.target.value)}
+              id="numero-lote"
+              name="numeroLote"
               type="search"
-              placeholder="Ej. Glucosa"
-              className={`${CLASE_CONTROL} pl-10 pr-4 text-sm font-medium text-ink`}
+              placeholder="Buscar por lote…"
+              className={`${CLASE_CONTROL} pl-9 pr-3 text-xs font-medium text-ink`}
             />
           </div>
         </div>
-        <div>
-          <label htmlFor="fecha-caducidad" className="mb-2 block text-sm font-medium text-ink-muted">
-            Fecha de caducidad
+        <div className="min-w-0">
+          <label htmlFor="nombre-control" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+            Nombre del control
           </label>
-          <input
-            id="fecha-caducidad"
-            type="date"
-            className={`${CLASE_CONTROL} px-4 text-sm font-medium text-ink`}
-          />
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <input
+              value={nombreCo}
+              onChange={e => actualizarFiltro("control", e.target.value)}
+              id="nombre-control"
+              name="nombreControl"
+              type="search"
+              placeholder="Buscar por control…"
+              className={`${CLASE_CONTROL} pl-9 pr-3 text-xs font-medium text-ink`}
+            />
+          </div>
+        </div>
+        <div className="min-w-0">
+          <label htmlFor="estado-control" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+            Estado del control
+          </label>
+          <div className="relative">
+            <select
+              onChange={e => actualizarFiltro("estado", e.target.value)}
+              id="estado-control"
+              name="estadoControl"
+              value={estado}
+              className={`${CLASE_CONTROL} appearance-none px-3 pr-8 text-xs font-medium text-ink`}
+            >
+              <option value="">Todos los estados</option>
+              <option value="1">Activo</option>
+              <option value="2">Inactivo</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+          </div>
+        </div>
+        </div>
+        <div className="mt-3 border-t border-line/70 pt-3">
+          <details className="group min-w-0 rounded-lg border border-line bg-white open:bg-canvas">
+            <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-3 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-canvas hover:text-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info [&::-webkit-details-marker]:hidden">
+              Rango de fechas de ingreso
+              <ChevronDown className="size-3.5 shrink-0 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
+            </summary>
+            <div className="grid gap-3 border-t border-line/70 p-3 sm:grid-cols-2">
+              <div className="min-w-0">
+                <label htmlFor="fecha-desde" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+                  Desde
+                </label>
+                <input
+                    value={fechaInicio}
+                    onChange={e => actualizarFiltro("fechaInicio", e.target.value)}
+                  id="fecha-desde"
+                  name="fechaDesde"
+                  type="datetime-local"
+                  className={`${CLASE_CONTROL} min-w-0 px-3 text-xs font-medium text-ink`}
+                />
+              </div>
+              <div className="min-w-0">
+                <label htmlFor="fecha-hasta" className="mb-1.5 block text-[11px] font-medium text-ink-muted">
+                  Hasta
+                </label>
+                <input
+                    value={fechaFin}
+                    onChange={e => actualizarFiltro("fechaFin", e.target.value)}
+                  id="fecha-hasta"
+                  name="fechaHasta"
+                  type="datetime-local"
+                  className={`${CLASE_CONTROL} min-w-0 px-3 text-xs font-medium text-ink`}
+                />
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
       <section
         aria-label="Analitos controlados de química"
-        className="mt-9 overflow-x-auto rounded-2xl border border-line bg-white shadow-[0_12px_36px_rgb(15_23_42_/_0.06)]"
+        className="mt-4 overflow-x-auto rounded-xl border border-line bg-white shadow-[0_4px_18px_rgb(15_23_42_/_0.04)]"
       >
-        <table className="w-full min-w-[900px] table-auto border-collapse text-left">
+        <table className="w-full min-w-[820px] table-auto border-collapse text-left">
           <thead>
-            <tr className="border-b border-line bg-[#f8f9fb]">
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Analito controlado</th>
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Control</th>
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Calibrador usado</th>
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Caducidad</th>
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Estado</th>
-              <th scope="col" className="px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">Detalle</th>
+            <tr className="border-b border-line bg-canvas">
+              <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Técnica controlada</th>
+              <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Fecha de ingreso</th>
+              <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Control</th>
+              <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Estado del control</th>
+              <th scope="col" className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr className={`border-b border-line transition-colors duration-200 ${EASE_PREMIUM} hover:bg-[#f8f9fb]`}>
-              <td className="px-3 py-3 align-middle text-[13px] text-ink-muted">
-                <p className="font-medium text-ink">Glucosa</p>
-                <p className="mt-1 text-[11px] leading-4 text-ink-faint">Hexoquinasa</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium text-ink">BioRad Glucosa</p>
-                <p className="mt-1 whitespace-nowrap text-[11px] text-ink-faint">Lote: GLO090</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium text-ink">{calibraciones.glucosa.calibrador || "Sin calibrador seleccionado"}</p>
-                <p className={`mt-1 text-[11px] ${calibraciones.glucosa.estado === "calibrado" ? "text-status-ok" : "text-ink-muted"}`}>
-                  {calibraciones.glucosa.estado === "calibrado" ? "Calibrado" : "Sin calibrar"}
-                </p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium tabular-nums text-ink">10/11/2026</p>
-                <p className="mt-1 text-[11px] text-ink-faint">Activo</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-status-alert">
+
+          {AnalitosControlados.map((a)=>{
+              return(
+                  <tr key={a.idNivelAnalitoControl} className={`border-b border-line/70 transition-colors duration-200 ${EASE_PREMIUM} last:border-b-0 hover:bg-status-info-soft/20 motion-reduce:transition-none`}>
+                      <td className="px-3 py-2.5 align-middle text-xs leading-4 text-ink-muted">
+                          <p className="font-semibold text-ink">{a.nombreAnalito}</p>
+                          <p className="mt-0.5 text-[10px] leading-4 text-ink-faint">{a.nombreNivel}</p>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 align-middle text-xs font-medium tabular-nums text-ink-muted">{formatearFecha(a.fecha)}</td>
+                      <td className="px-3 py-2.5 align-middle">
+                          <p className="text-xs font-medium leading-4 text-ink">{a.nombreControl}</p>
+                          <p className="mt-0.5 whitespace-nowrap text-[10px] leading-4 text-ink-faint">{a.lote}</p>
+                      </td>
+                      <td className="px-3 py-2.5 align-middle">
+                <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold ring-1 ring-inset ring-current/10 ${a.estadoControl ? "bg-status-ok-soft text-status-ok" : "bg-status-alert-soft text-status-alert"}`}>
                   <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Desactivado
+                    {estadoString(a.estadoControl)}
                 </span>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    aria-label="Ver BioRad Glucosa"
-                    className={`inline-flex h-8 items-center rounded-lg border border-line-strong bg-white px-3 text-[13px] font-medium text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-[0.97] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                  >
-                    Ver
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Calibrar BioRad Glucosa"
-                    onClick={() => abrirCalibracion("glucosa")}
-                    className={`inline-flex h-8 items-center rounded-lg bg-black px-3 text-[13px] font-medium text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)] active:translate-y-0 active:scale-[0.97] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                  >
-                    Calibrar
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr className={`transition-colors duration-200 ${EASE_PREMIUM} hover:bg-[#f8f9fb]`}>
-              <td className="px-3 py-3 align-middle text-[13px] text-ink-muted">
-                <p className="font-medium text-ink">Colesterol</p>
-                <p className="mt-1 text-[11px] leading-4 text-ink-faint">CHOD-PAP</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium text-ink">BioRad Colesterol</p>
-                <p className="mt-1 whitespace-nowrap text-[11px] text-ink-faint">Lote: CO0044</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium text-ink">{calibraciones.colesterol.calibrador || "Sin calibrador seleccionado"}</p>
-                <p className={`mt-1 text-[11px] ${calibraciones.colesterol.estado === "calibrado" ? "text-status-ok" : "text-ink-muted"}`}>
-                  {calibraciones.colesterol.estado === "calibrado" ? "Calibrado" : "Sin calibrar"}
-                </p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <p className="text-[13px] font-medium tabular-nums text-ink">10/11/2026</p>
-                <p className="mt-1 text-[11px] text-ink-faint">Activo</p>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] font-medium text-status-ok">
-                  <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                  Activado
-                </span>
-              </td>
-              <td className="px-3 py-3 align-middle">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    aria-label="Ver BioRad Colesterol"
-                    className={`inline-flex h-8 items-center rounded-lg border border-line-strong bg-white px-3 text-[13px] font-medium text-ink-muted shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-[0.97] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                  >
-                    Ver
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Calibrar BioRad Colesterol"
-                    onClick={() => abrirCalibracion("colesterol")}
-                    className={`inline-flex h-8 items-center rounded-lg bg-black px-3 text-[13px] font-medium text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)] active:translate-y-0 active:scale-[0.97] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
-                  >
-                    Calibrar
-                  </button>
-                </div>
-              </td>
-            </tr>
+                      </td>
+                      <td className="px-3 py-2.5 align-middle">
+                          <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                  type="button"
+                                  aria-label="Ver gráfico Levey-Jennings de Glucosa"
+                                  className={`inline-flex h-7 items-center whitespace-nowrap rounded-md border border-line bg-white px-2 text-[10px] font-semibold text-ink-muted shadow-sm transition-colors duration-200 ${EASE_PREMIUM} hover:border-status-info/40 hover:bg-status-info-soft hover:text-status-info active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none`}
+                              >
+                                  Levey-Jennings
+                              </button>
+                              <button
+                                  type="button"
+                                  aria-label="Ver historial de BioRad Glucosa"
+                                  className={`inline-flex h-7 items-center rounded-md bg-ink px-2 text-[10px] font-semibold text-white shadow-sm transition-colors duration-200 ${EASE_PREMIUM} hover:bg-accent-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none`}
+                              >
+                                  Historial
+                              </button>
+                          </div>
+                      </td>
+                  </tr>
+          )})}
           </tbody>
         </table>
       </section>
 
-      <dialog
-        ref={dialogoCalibrar}
-        id="seleccionar-calibrador"
-        aria-labelledby="titulo-seleccionar-calibrador"
-        onClose={() => setPopupCalibrar(false)}
-        className="m-auto max-h-[calc(100dvh-3rem)] w-[min(520px,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-black/45 backdrop:backdrop-blur-sm"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-line bg-canvas px-6 py-5">
-          <div>
-            <h2 id="titulo-seleccionar-calibrador" className="text-xl font-semibold tracking-[-0.025em]">Calibrar analito</h2>
-            <p className="mt-1 text-sm text-ink-muted">
-              {analitoSeleccionado === "glucosa" ? "Glucosa · Hexoquinasa" : "Colesterol · CHOD-PAP"}
-            </p>
-          </div>
-          <button type="button" onClick={() => setPopupCalibrar(false)} aria-label="Cerrar calibración" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-xl text-ink-muted hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-status-info">×</button>
-        </div>
-        <form
-          onSubmit={(evento) => {
-            evento.preventDefault();
-            if (!analitoSeleccionado) return;
-            setCalibraciones((actuales) => ({
-              ...actuales,
-              [analitoSeleccionado]: {
-                calibrador: calibradorSeleccionado,
-                estado: estadoCalibracion,
-                anotacion,
-              },
-            }));
-            setPopupCalibrar(false);
-          }}
-          className="space-y-5 p-6"
-        >
-          <div>
-            <label htmlFor="calibrador" className="mb-2 block text-sm font-medium text-ink-muted">Calibrador</label>
-            <div className="relative">
-              <select id="calibrador" name="calibrador" value={calibradorSeleccionado} onChange={(evento) => setCalibradorSeleccionado(evento.target.value)} required={estadoCalibracion === "calibrado"} className={`${CLASE_CONTROL} appearance-none px-3 pr-9 text-sm text-ink`}>
-                <option value="">Selecciona un calibrador</option>
-                <option value="Human1 Multicalibrador">Human1 Multicalibrador</option>
-                <option value="RADOX Monocalibrador">RADOX Monocalibrador</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="estado-calibracion" className="mb-2 block text-sm font-medium text-ink-muted">Estado de calibración</label>
-            <div className="relative">
-              <select id="estado-calibracion" name="estadoCalibracion" value={estadoCalibracion} onChange={(evento) => setEstadoCalibracion(evento.target.value)} className={`${CLASE_CONTROL} appearance-none px-3 pr-9 text-sm text-ink`}>
-                <option value="sinCalibrar">Sin calibrar</option>
-                <option value="calibrado">Calibrado</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="anotacion-calibracion" className="mb-2 block text-sm font-medium text-ink-muted">Anotación <span className="text-xs font-normal text-ink-faint">(opcional)</span></label>
-            <textarea id="anotacion-calibracion" name="anotacion" value={anotacion} onChange={(evento) => setAnotacion(evento.target.value)} rows={4} placeholder="Escribe una observación sobre la calibración…" className="w-full resize-y rounded-xl border border-line bg-white px-3 py-3 text-sm text-ink shadow-sm outline-none placeholder:text-ink-faint focus:border-status-info focus:ring-4 focus:ring-status-info/10" />
-          </div>
-          <div className="flex flex-wrap justify-end gap-3 border-t border-line pt-5">
-            <button type="button" onClick={() => setPopupCalibrar(false)} className="h-11 rounded-xl border border-line bg-white px-4 text-sm font-medium text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-status-info">Cancelar</button>
-            <button type="submit" className="h-11 rounded-xl bg-ink px-4 text-sm font-medium text-white hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info">Guardar cambios</button>
-          </div>
-        </form>
-      </dialog>
     </div>
   );
 }

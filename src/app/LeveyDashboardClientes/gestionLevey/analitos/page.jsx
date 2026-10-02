@@ -1,6 +1,7 @@
 "use client"
 import {useEffect, useRef, useState} from "react";
 import {useAuth} from "@clerk/nextjs";
+import Link from "next/link";
 import Toaster from "@/components/ui/toast";
 import {CirclePlus,FlaskConical, LoaderCircle, Pencil, Power,Save,Search,SlidersHorizontal} from "lucide-react";
 
@@ -790,6 +791,19 @@ export default function PaginaAnalitos() {
             </h1>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <Link
+            href="/LeveyDashboardClientes/analisisCalidad/analitosControlados"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink-muted shadow-sm transition-colors hover:border-status-info/40 hover:bg-status-info-soft hover:text-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none"
+          >
+            Técnicas Controladas
+          </Link>
+          <Link
+            href="/LeveyDashboardClientes/analisisCalidad/controles"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-semibold text-ink-muted shadow-sm transition-colors hover:border-status-info/40 hover:bg-status-info-soft hover:text-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none"
+          >
+            Controles
+          </Link>
           <button
             onClick={() => setEstadoPopUpInsertar(true)}
             type="button"
@@ -800,6 +814,7 @@ export default function PaginaAnalitos() {
             <CirclePlus className="size-4" aria-hidden="true" />
             Ingresar analito
           </button>
+          </div>
         </header>
 
         <div

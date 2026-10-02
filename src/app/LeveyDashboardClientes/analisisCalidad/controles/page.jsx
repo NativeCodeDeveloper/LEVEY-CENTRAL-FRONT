@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {useAuth} from "@clerk/nextjs";
+import Link from "next/link";
 import Toaster from "@/components/ui/toast";
 
 const FILTROS_INICIALES = Object.freeze({
@@ -1212,6 +1213,12 @@ export default function PaginaControles() {
         </header>
 
         <div className="flex flex-wrap gap-3 lg:justify-end">
+          <Link
+            href="/LeveyDashboardClientes/gestionLevey/analitos"
+            className="inline-flex h-11 items-center justify-center rounded-lg border border-line bg-white px-5 text-sm font-semibold text-ink-muted shadow-sm transition-colors hover:border-status-info/40 hover:bg-status-info-soft hover:text-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info motion-reduce:transition-none"
+          >
+            Técnicas Disponibles
+          </Link>
           {/* BOTÓN QUE ABRE EL POPUP DE INGRESO (ver bloque POPUP al final del archivo) */}
           <button
             type="button"

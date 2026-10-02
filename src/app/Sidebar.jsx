@@ -58,6 +58,7 @@ const grupos = [
         { etiqueta: "Analizadores Equipos", icono: "analizadores" },
         { etiqueta: "Informacion ", icono: "informacion" },
         { etiqueta: "Reglas de Westgard ", icono: "westgard" },
+        { etiqueta: "Notificaciones", icono: "campana", href: "/LeveyDashboardClientes/gestionLevey/notificaciones" },
 
     ],
   },
