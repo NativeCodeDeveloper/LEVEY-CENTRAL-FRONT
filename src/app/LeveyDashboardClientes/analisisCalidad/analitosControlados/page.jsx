@@ -1,5 +1,5 @@
 "use client"
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Save, Search } from "lucide-react";
 import Link from "next/link";
 import {useEffect, useState} from "react";
 import {useAuth} from "@clerk/nextjs";
@@ -14,13 +14,13 @@ import {
     listarSegunAnalitos,
     buscarEntreFechas
 } from "@/app/LeveyDashboardClientes/servicesBackend/analitosControlados"
-import {listarAnalitos} from "@/app/LeveyDashboardClientes/servicesBackend/tecnicasAnalitos";
+import {editarAnalitos, listarAnalitos} from "@/app/LeveyDashboardClientes/servicesBackend/tecnicasAnalitos";
 
 
 export default function PaginaAnalitosControlados() {
   const EASE_PREMIUM = "ease-[cubic-bezier(0.22,1,0.36,1)]";
   const CLASE_CONTROL = `h-9 w-full rounded-lg border border-line bg-canvas shadow-sm outline-none transition-colors duration-200 ${EASE_PREMIUM} hover:border-line-strong placeholder:text-ink-faint focus-visible:border-status-info focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-status-info/10 motion-reduce:transition-none`;
-    const { getToken, isLoaded } = useAuth();
+    const { getToken, isLoaded, userId } = useAuth();
     const toasterRef = useRef();
 
 
@@ -77,6 +77,9 @@ export default function PaginaAnalitosControlados() {
     const [estado, setEstado] = useState("");
     const [fechaInicio, setFechaInicio] = useState("");
     const [fechaFin, setFechaFin] = useState("");
+    const [filaGuardando, setFilaGuardando] = useState(null);
+    // Contador para volver a listar después de guardar, sin tocar los filtros.
+    const [recargasListado, setRecargasListado] = useState(0);
 
     function actualizarFiltro(tipo, valor) {
         setAnalitoSeleccionado(tipo === "tecnica" ? valor : "");
@@ -150,7 +153,7 @@ export default function PaginaAnalitosControlados() {
         return () => {
             vigente = false;
         };
-    }, [analitoSeleccionado, lote, nombreCo, estado, fechaInicio, fechaFin, getToken, isLoaded]);
+    }, [analitoSeleccionado, lote, nombreCo, estado, fechaInicio, fechaFin, recargasListado, getToken, isLoaded]);
 
     const AnalitosControlados = data.map((item) => {
         return {
@@ -169,8 +172,32 @@ export default function PaginaAnalitosControlados() {
             lote: item[9],
             estadoControl: item[10],
             fecha: item[11],
+            mediaObjetivo: item[12] || "-",
+            desviacionEstandarObjetivo: item[13] || "-",
         };
     });
+
+    // Valores editables de la tabla, indexados por idNivelAnalitoControl:
+    // { [id]: { mediaObjetivo: "…", desviacionEstandarObjetivo: "…" } }
+    const [valoresEditados, setValoresEditados] = useState({});
+
+    function actualizarValorObjetivo(id, campo, valor) {
+        setValoresEditados((prev) => ({
+            ...prev,
+            [id]: {
+                ...prev[id],
+                [campo]: valor,
+            },
+        }));
+    }
+
+    // Prioriza lo editado por el usuario; si no hay edición ni valor del backend, parte en 0.
+    function valorObjetivo(fila, campo) {
+        const editado = valoresEditados[fila.idNivelAnalitoControl]?.[campo];
+        if (editado !== undefined) return editado;
+        const original = fila[campo];
+        return original === "-" || original === undefined || original === null ? "0" : String(original);
+    }
 
 
 
@@ -193,7 +220,89 @@ export default function PaginaAnalitosControlados() {
 
 
 
+    // Acepta coma decimal ("5,2") y la normaliza a punto para el backend.
+    function numeroNormalizado(valor) {
+        return valor.trim().replace(",", ".");
+    }
 
+    function esNumeroValido(valor) {
+        return valor.trim() !== "" && !Number.isNaN(Number(numeroNormalizado(valor)));
+    }
+
+    async function editarTecnica(
+        idNivelesAnalitosControl,
+        mediaObjetivo,
+        desviacionEstandarObjetivo,
+        usuarioModificacion
+    ) {
+        try {
+            const token = await getToken();
+
+            const respuestaBackend = await editarAnalitos(
+                token,
+                idNivelesAnalitosControl,
+                mediaObjetivo,
+                desviacionEstandarObjetivo,
+                usuarioModificacion);
+
+            if (!respuestaBackend.success) {
+                return toasterRef.current?.show({
+                    title: respuestaBackend.message,
+                    variant: "error",
+                    duration: 1000,
+                });
+            }
+
+            // Limpia la edición de la fila y recarga el listado con lo guardado.
+            setValoresEditados((prev) => {
+                const copia = { ...prev };
+                delete copia[idNivelesAnalitosControl];
+                return copia;
+            });
+            setRecargasListado((n) => n + 1);
+
+            return toasterRef.current?.show({
+                title: respuestaBackend.message,
+                variant: "success",
+                duration: 1000,
+            });
+        } catch (error) {
+            return toasterRef.current?.show({
+                title: error.message,
+                variant: "error",
+                duration: 1000,
+            });
+        }
+    }
+
+    // Guarda una fila: exige los dos valores (media y desviación) antes de llamar al backend.
+    async function guardarObjetivos(fila) {
+        const media = valorObjetivo(fila, "mediaObjetivo");
+        const desviacion = valorObjetivo(fila, "desviacionEstandarObjetivo");
+
+        if (!esNumeroValido(media) || !esNumeroValido(desviacion)) {
+            return toasterRef.current?.show({
+                title: "Debes completar la media objetivo y la desviación estándar con valores numéricos",
+                variant: "error",
+                duration: 1000,
+            });
+        }
+
+        const usuarioModificacion = userId;
+        setFilaGuardando(fila.idNivelAnalitoControl);
+        try {
+            // Se envían como número JSON real (12.5), no string: Spring lo mapea a BigDecimal.
+            await editarTecnica(
+                fila.idNivelAnalitoControl,
+                Number(numeroNormalizado(media)),
+                Number(numeroNormalizado(desviacion)),
+                usuarioModificacion
+
+            );
+        } finally {
+            setFilaGuardando(null);
+        }
+    }
 
 
     return (
@@ -354,6 +463,8 @@ export default function PaginaAnalitosControlados() {
               <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Técnica controlada</th>
               <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Fecha de ingreso</th>
               <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Control</th>
+              <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Media objetivo</th>
+              <th scope="col" title="Desviación estándar objetivo" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">D.E objetivo</th>
               <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Estado del control</th>
               <th scope="col" className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">Acciones</th>
             </tr>
@@ -373,6 +484,26 @@ export default function PaginaAnalitosControlados() {
                           <p className="mt-0.5 whitespace-nowrap text-[10px] leading-4 text-ink-faint">{a.lote}</p>
                       </td>
                       <td className="px-3 py-2.5 align-middle">
+                          <input
+                              type="text"
+                              inputMode="decimal"
+                              value={valorObjetivo(a, "mediaObjetivo")}
+                              onChange={(e) => actualizarValorObjetivo(a.idNivelAnalitoControl, "mediaObjetivo", e.target.value)}
+                              aria-label={`Media objetivo de ${a.nombreAnalito}, ${a.nombreNivel}`}
+                              className={`h-7 w-full max-w-[72px] rounded-md border border-line-strong bg-white px-1.5 text-xs font-medium tabular-nums text-ink shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.03)] outline-none transition-all duration-200 ${EASE_PREMIUM} placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-[3px] focus-visible:ring-status-info/15`}
+                          />
+                      </td>
+                      <td className="px-3 py-2.5 align-middle">
+                          <input
+                              type="text"
+                              inputMode="decimal"
+                              value={valorObjetivo(a, "desviacionEstandarObjetivo")}
+                              onChange={(e) => actualizarValorObjetivo(a.idNivelAnalitoControl, "desviacionEstandarObjetivo", e.target.value)}
+                              aria-label={`Desviación estándar objetivo de ${a.nombreAnalito}, ${a.nombreNivel}`}
+                              className={`h-7 w-full max-w-[72px] rounded-md border border-line-strong bg-white px-1.5 text-xs font-medium tabular-nums text-ink shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.03)] outline-none transition-all duration-200 ${EASE_PREMIUM} placeholder:text-ink-faint focus-visible:border-status-info focus-visible:ring-[3px] focus-visible:ring-status-info/15`}
+                          />
+                      </td>
+                      <td className="px-3 py-2.5 align-middle">
                 <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold ring-1 ring-inset ring-current/10 ${a.estadoControl ? "bg-status-ok-soft text-status-ok" : "bg-status-alert-soft text-status-alert"}`}>
                   <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
                     {estadoString(a.estadoControl)}
@@ -380,6 +511,16 @@ export default function PaginaAnalitosControlados() {
                       </td>
                       <td className="px-3 py-2.5 align-middle">
                           <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                  type="button"
+                                  onClick={() => guardarObjetivos(a)}
+                                  disabled={filaGuardando === a.idNivelAnalitoControl}
+                                  aria-label={`Guardar media objetivo y desviación estándar de ${a.nombreAnalito}, ${a.nombreNivel}`}
+                                  className={`inline-flex h-7 items-center gap-1 rounded-md bg-status-info px-2 text-[10px] font-semibold text-white shadow-sm transition-colors duration-200 ${EASE_PREMIUM} hover:bg-black active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-status-info disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none`}
+                              >
+                                  <Save className="size-3" aria-hidden="true" />
+                                  {filaGuardando === a.idNivelAnalitoControl ? "Guardando…" : "Guardar"}
+                              </button>
                               <button
                                   type="button"
                                   aria-label="Ver gráfico Levey-Jennings de Glucosa"

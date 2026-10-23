@@ -20,4 +20,32 @@ export async function listarAnalitos(token) {
 }
 
 
-
+export async function editarAnalitos(
+    token,
+    idNivelesAnalitosControl,
+    mediaObjetivo,
+    desviacionEstandarObjetivo,
+    usuarioModificacion
+) {
+    const response = await fetch(
+        `${API_URL}/nivel/analito/editar`,
+        {
+            method: "PUT",
+            headers: {
+                "Accept":"application/json",
+                "Content-Type":"application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                idNivelesAnalitosControl,
+                mediaObjetivo,
+                desviacionEstandarObjetivo,
+                usuarioModificacion
+            }),
+        }
+    );
+    if (!response.ok) {
+        throw new Error("Error al obtener los analitos");
+    }
+    return response.json();
+}

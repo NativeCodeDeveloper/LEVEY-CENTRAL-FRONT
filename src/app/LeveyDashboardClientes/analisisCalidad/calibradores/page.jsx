@@ -5,6 +5,17 @@ import { useState } from "react";
 export default function Calibradores() {
   const [popupInsertar, setPopupInsertar] = useState(false);
   const [popupEditar, setPopupEditar] = useState(false);
+  const [busquedaNombre, setBusquedaNombre] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
+
+  const coincideConFiltros = (nombre, estado) => {
+    const nombreNormalizado = nombre.toLowerCase();
+    const busquedaNormalizada = busquedaNombre.toLowerCase().trim();
+    const coincideNombre = busquedaNormalizada === "" || nombreNormalizado.includes(busquedaNormalizada);
+    const coincideEstado = filtroEstado === "" || estado === filtroEstado;
+
+    return coincideNombre && coincideEstado;
+  };
 
   return (
     <main className="min-h-dvh bg-canvas px-5 py-8 text-ink sm:px-8 lg:px-10 lg:py-10">
@@ -38,6 +49,30 @@ export default function Calibradores() {
           <div className="border-b border-line bg-[#f8f9fb] px-5 py-4 sm:px-6">
             <h2 className="text-sm font-bold text-ink">Listado de calibradores</h2>
             <p className="mt-1 text-xs text-ink-muted">Información de control para la operación diaria.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted">Buscar por nombre</span>
+                <input
+                  type="search"
+                  value={busquedaNombre}
+                  onChange={(evento) => setBusquedaNombre(evento.target.value)}
+                  placeholder="Buscar calibrador"
+                  className="mt-2 h-10 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-ink-muted"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted">Estado</span>
+                <select
+                  value={filtroEstado}
+                  onChange={(evento) => setFiltroEstado(evento.target.value)}
+                  className="mt-2 h-10 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-ink-muted"
+                >
+                  <option value="">Todos los estados</option>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+              </label>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -59,7 +94,8 @@ export default function Calibradores() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/70">
-                <tr className="transition-colors hover:bg-[#fbfbfc]">
+                {coincideConFiltros("Chemistry Sera-1", "activo") ? (
+                  <tr className="transition-colors hover:bg-[#fbfbfc]">
                   <td className="px-6 py-5 align-middle">
                     <p className="text-sm font-bold text-ink">Chemistry Sera-1</p>
                     <p className="mt-1 text-xs text-ink-muted">Roche</p>
@@ -87,9 +123,11 @@ export default function Calibradores() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                  </tr>
+                ) : null}
 
-                <tr className="transition-colors hover:bg-[#fbfbfc]">
+                {coincideConFiltros("Multianalito Hormone II", "activo") ? (
+                  <tr className="transition-colors hover:bg-[#fbfbfc]">
                   <td className="px-6 py-5 align-middle">
                     <p className="text-sm font-bold text-ink">Multianalito Hormone II</p>
                     <p className="mt-1 text-xs text-ink-muted">Abbott</p>
@@ -117,9 +155,11 @@ export default function Calibradores() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                  </tr>
+                ) : null}
 
-                <tr className="transition-colors hover:bg-[#fbfbfc]">
+                {coincideConFiltros("HbA1c Calibrator Set", "inactivo") ? (
+                  <tr className="transition-colors hover:bg-[#fbfbfc]">
                   <td className="px-6 py-5 align-middle">
                     <p className="text-sm font-bold text-ink">HbA1c Calibrator Set</p>
                     <p className="mt-1 text-xs text-ink-muted">Siemens</p>
@@ -147,12 +187,14 @@ export default function Calibradores() {
                       </button>
                     </div>
                   </td>
-                </tr>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
         </section>
 
+        {/* POP-UP: insertar un nuevo calibrador. */}
         {popupInsertar && (
           <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="titulo-insertar-calibrador">
             <div className="max-h-[calc(100dvh-3rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-white shadow-2xl">
@@ -218,6 +260,7 @@ export default function Calibradores() {
           </div>
         )}
 
+        {/* POP-UP: editar el calibrador seleccionado. */}
         {popupEditar && (
           <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="titulo-editar-calibrador">
             <div className="max-h-[calc(100dvh-3rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-white shadow-2xl">
