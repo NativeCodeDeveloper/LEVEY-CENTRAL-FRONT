@@ -16,6 +16,10 @@ export default function PaginaCorridas() {
     const toasterRef = useRef(null);
     const [popupNuevaCorrida, setPopupNuevaCorrida] = useState(false);
     const [popupComentario, setPopupComentario] = useState(false);
+    const [popupFinalizar, setPopupFinalizar] = useState(false);
+    const [corridaAFinalizar, setCorridaAFinalizar] = useState("");
+    const [popupReactivar, setPopupReactivar] = useState(false);
+    const [corridaAReactivar, setCorridaAReactivar] = useState("");
     const [analitosAgregados, setAnalitosAgregados] = useState([]);
     const {getToken,userId} = useAuth();
 
@@ -130,6 +134,8 @@ export default function PaginaCorridas() {
     const corridas = data.map((i) => {
         return {
             numero: i.idCorrida,
+            // Valor por defecto hasta que el backend envie la serie real de cada corrida.
+            serieAnalitica: "023",
             fechaIngreso: i.fechaCreacion,
             usuarioCreacion: "BOLATE",
             fechaModificacion: i.fechaModificacion,
@@ -261,6 +267,24 @@ export default function PaginaCorridas() {
 
 
 
+    async function confirmarFinalizar() {
+        try {
+            await desactivarCorrida(corridaAFinalizar);
+        } finally {
+            setPopupFinalizar(false);
+            setCorridaAFinalizar("");
+        }
+    }
+
+    async function confirmarReactivar() {
+        try {
+            await activarCorrida(corridaAReactivar);
+        } finally {
+            setPopupReactivar(false);
+            setCorridaAReactivar("");
+        }
+    }
+
     const [comentario, setComentario] = useState("");
     const [idCorrida, setIdCorrida]=useState("");
 
@@ -363,10 +387,11 @@ export default function PaginaCorridas() {
           ANÁLISIS QC / CORRIDAS
         </p>
         <h1 className="mt-2 text-[28px] font-bold tracking-[-0.035em] text-ink sm:text-[34px]">
-          Series Analíticas
+          Historial de Corridas Analiticas
         </h1>
         <p className="mt-3 text-sm text-ink-muted">
-            Conjunto de varias corridas analíticas individuales analizadas en su totalidad. CLSI C24 del Clinical and Laboratory Standards Institute.        </p>
+             Todas las corridas registradas con sus respectivos estados analiticos
+                </p>
       </header>
 
       <div className="mt-8 flex justify-end">
@@ -374,7 +399,7 @@ export default function PaginaCorridas() {
           href="/LeveyDashboardClientes/analisisCalidad/registro"
           className={`inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-black px-5 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.14)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_10px_24px_rgb(91_62_200_/_0.35)] active:translate-y-0 active:scale-[0.98] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
         >
-          Ir a Registros
+          Registrar Medicion
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </div>
@@ -410,25 +435,27 @@ export default function PaginaCorridas() {
         aria-label="Historial de corridas analíticas"
         className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white shadow-[0_12px_36px_rgb(15_23_42_/_0.06)]"
       >
-        <table className="w-full min-w-[1200px] table-fixed border-collapse text-left">
+        <table className="w-full min-w-[1280px] table-fixed border-collapse text-left">
           <colgroup>
-            <col className="w-[9%]" />
+            <col className="w-[7%]" />
+            <col className="w-[7%]" />
+            <col className="w-[20%]" />
             <col className="w-[16%]" />
             <col className="w-[16%]" />
-            <col className="w-[17%]" />
-            <col className="w-[13%]" />
             <col className="w-[12%]" />
-            <col className="w-[17%]" />
+            <col className="w-[11%]" />
+            <col className="w-[11%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-line bg-[#f8f9fb] align-middle">
-              <th scope="col" title="Número de serie" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Nº serie</th>
-              <th scope="col" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Comentarios</th>
-              <th scope="col" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Fecha de ingreso</th>
-              <th scope="col" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Última modificación</th>
-              <th scope="col" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Estado de actividad</th>
-              <th scope="col" className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Estado analítico</th>
-              <th scope="col" className="px-4 py-3.5 text-center text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Acciones</th>
+              <th scope="col" title="Número de corrida" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Corrida</th>
+              <th scope="col" title="Serie analítica" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Serie</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Comentarios</th>
+              <th scope="col" title="Fecha de ingreso" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Ingreso</th>
+              <th scope="col" title="Última modificación" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Modificación</th>
+              <th scope="col" title="Estado de actividad" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Actividad</th>
+              <th scope="col" title="Estado analítico" className="whitespace-nowrap px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Análisis</th>
+              <th scope="col" className="whitespace-nowrap px-3 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-muted">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -437,37 +464,34 @@ export default function PaginaCorridas() {
                 key={c.numero}
                 className={`border-b border-line align-middle transition-colors duration-200 ${EASE_PREMIUM} last:border-b-0 hover:bg-[#f8f9fb]`}
               >
-                <td className="px-4 py-3.5 text-left">
-                  <p className="whitespace-nowrap text-[11px] font-bold tabular-nums text-ink">SERIE: {c.numero}</p>
+                <td className="px-4 py-3 text-left">
+                  <p className="whitespace-nowrap text-[10.5px] font-medium tabular-nums text-ink">{c.numero}</p>
                 </td>
-                <td className="px-4 py-3.5 text-left">
-                  <p className="truncate text-[11px] font-semibold text-ink" title="Control Bio-Rad Nivel 1">{c.comentarios}</p>
+                <td className="px-4 py-3 text-left">
+                  <p className="whitespace-nowrap text-[10.5px] font-medium tabular-nums text-ink">{c.serieAnalitica}</p>
                 </td>
-                <td className="px-4 py-3.5 text-left">
-                  <p className="whitespace-nowrap text-[11px] font-semibold tabular-nums text-ink">{c.ingreso}</p>
-                  <p className="mt-1 whitespace-nowrap text-[10px] font-medium leading-4 text-ink-faint">
-                    Creada por {c.usuarioCreacion}
-                  </p>
+                <td className="px-4 py-3 text-left">
+                  <p className="truncate text-[10.5px] font-medium text-ink" title={c.comentarios || "Sin comentarios"}>{c.comentarios}</p>
                 </td>
-                <td className="px-4 py-3.5 text-left">
-                  <p className="whitespace-nowrap text-[11px] font-semibold tabular-nums text-ink">{c.fechaModificacion || c.fechaIngreso }</p>
-                  <p className="mt-1 whitespace-nowrap text-[10px] font-medium leading-4 text-ink-faint">
-                    Modificada por {c.usuarioModificacion}
-                  </p>
+                <td className="px-4 py-3 text-left">
+                  <p className="whitespace-nowrap text-[10.5px] font-medium tabular-nums text-ink">{c.ingreso}</p>
                 </td>
-                <td className="px-4 py-3.5 text-left">
-                  <span className={`inline-flex max-w-full items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ring ring-inset transition-colors duration-200 hover:brightness-95 ${tonoPill[c.estadoActividad.tono] ?? tonoPill.neutral}`}>
-                    <span className={`mr-1.5 size-1.5 shrink-0 rounded-full ${dotColor[c.estadoActividad.tono]} opacity-70`} aria-hidden="true" />
+                <td className="px-4 py-3 text-left">
+                  <p className="whitespace-nowrap text-[10.5px] font-medium tabular-nums text-ink">{c.fechaModificacion ? c.modificacion : c.ingreso}</p>
+                </td>
+                <td className="px-4 py-3 text-left">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9.5px] font-semibold ring ring-inset transition-colors duration-200 hover:brightness-95 ${tonoPill[c.estadoActividad.tono] ?? tonoPill.neutral}`}>
+                    <span className={`mr-1 size-1.5 shrink-0 rounded-full ${dotColor[c.estadoActividad.tono]} opacity-70`} aria-hidden="true" />
                     {c.estadoActividad.texto}
                   </span>
                 </td>
-                <td className="px-4 py-3.5 text-left">
-                  <span className={`inline-flex max-w-full items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ring ring-inset transition-colors duration-200 hover:brightness-95 ${tonoPill[c.estadoAnalitico.tono] ?? tonoPill.neutral}`}>
-                    <span className={`mr-1.5 size-1.5 shrink-0 rounded-full ${dotColor[c.estadoAnalitico.tono]} opacity-70`} aria-hidden="true" />
+                <td className="px-4 py-3 text-left">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9.5px] font-semibold ring ring-inset transition-colors duration-200 hover:brightness-95 ${tonoPill[c.estadoAnalitico.tono] ?? tonoPill.neutral}`}>
+                    <span className={`mr-1 size-1.5 shrink-0 rounded-full ${dotColor[c.estadoAnalitico.tono]} opacity-70`} aria-hidden="true" />
                     {c.estadoAnalitico.texto}
                   </span>
                 </td>
-                <td className="px-4 py-3.5 text-center">
+                <td className="px-3 py-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     {/* MOCK: conectar con el endpoint de detalle de corrida cuando exista */}
                     <button
@@ -497,22 +521,23 @@ export default function PaginaCorridas() {
                         type="button"
                         onClick={() => {
                             if (c.estadoActividad.texto === "ACTIVO") {
-                                desactivarCorrida(c.numero);
+                                setCorridaAFinalizar(c.numero);
+                                setPopupFinalizar(true);
                             } else {
-                                activarCorrida(c.numero);
+                                setCorridaAReactivar(c.numero);
+                                setPopupReactivar(true);
                             }
                         }}
                         aria-pressed={c.estadoActividad.tono !== "gray" && c.estadoActividad.tono !== "neutral"}
                         aria-label={c.estadoActividad.texto === "ACTIVO" ? `Finalizar la serie ${c.numero}` : `Activar la serie finalizada ${c.numero}`}
                         title={c.estadoActividad.texto === "ACTIVO" ? "Finalizar serie" : "Activar serie finalizada"}
-                        className={`group flex h-8 min-w-[92px] shrink-0 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-semibold transition-all duration-300 ${EASE_PREMIUM} active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+                        className={`group flex size-8 shrink-0 items-center justify-center rounded-lg transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px active:translate-y-0 active:scale-95 active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
                             c.estadoActividad.texto === "ACTIVO"
-                                ? `bg-black text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] hover:-translate-y-px hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)]`
-                                : `border border-line-strong bg-white text-ink-faint shadow-sm hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)]`
+                                ? `bg-black text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.12)] hover:bg-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.32)]`
+                                : `border border-line-strong bg-white text-ink-faint shadow-sm hover:border-status-info hover:text-status-info hover:shadow-[0_6px_16px_rgb(91_62_200_/_0.16)]`
                         }`}
                     >
                       <Power className={`size-3.5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${c.estadoActividad.texto === "ACTIVO" ? "opacity-100" : "opacity-50"}`} aria-hidden="true" />
-                      {c.estadoActividad.texto === "ACTIVO" ? "FINALIZAR" : "FINALIZADA"}
                     </button>
                   </div>
                 </td>
@@ -575,6 +600,112 @@ export default function PaginaCorridas() {
               >
                 <MessageSquarePlus className="size-4" aria-hidden="true" />
                 Añadir comentario
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============================================================
+          POPUP CONFIRMAR FINALIZAR CORRIDA
+      ============================================================ */}
+      {popupFinalizar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/45 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-finalizar-corrida"
+          aria-describedby="descripcion-finalizar-corrida"
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-5 sm:px-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Series analíticas</p>
+                <h2 id="titulo-finalizar-corrida" className="mt-1 text-xl font-bold tracking-[-0.03em] text-ink">Finalizar corrida</h2>
+                <p id="descripcion-finalizar-corrida" className="mt-2 text-sm leading-5 text-ink-muted">¿Está seguro de que desea finalizar esta corrida?</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPopupFinalizar(false)}
+                aria-label="Cerrar confirmación"
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="px-5 py-6 sm:px-6">
+              <p className="text-sm leading-6 text-ink">
+                La corrida <span className="font-semibold tabular-nums text-ink">Nº {corridaAFinalizar}</span> pasará a estado <span className="font-semibold text-ink">FINALIZADA</span>.
+              </p>
+            </div>
+            <div className="flex flex-col-reverse gap-3 border-t border-line px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+              <button
+                type="button"
+                onClick={() => setPopupFinalizar(false)}
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-line-strong bg-white px-5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarFinalizar}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-black px-5 text-sm font-semibold text-white transition-colors hover:bg-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <Power className="size-4" aria-hidden="true" />
+                Sí, finalizar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          POPUP CONFIRMAR REACTIVAR CORRIDA FINALIZADA
+      ============================================================ */}
+      {popupReactivar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/45 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-reactivar-corrida"
+          aria-describedby="descripcion-reactivar-corrida"
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-line bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-5 sm:px-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Series analíticas</p>
+                <h2 id="titulo-reactivar-corrida" className="mt-1 text-xl font-bold tracking-[-0.03em] text-ink">Reactivar corrida</h2>
+                <p id="descripcion-reactivar-corrida" className="mt-2 text-sm leading-5 text-ink-muted">Esta corrida ya había sido finalizada.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPopupReactivar(false)}
+                aria-label="Cerrar confirmación"
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="px-5 py-6 sm:px-6">
+              <p className="text-sm leading-6 text-ink">
+                Si la marca como activa nuevamente, cualquier modificación quedará registrada con el usuario que tenga la sesión activa en este momento
+                (<span className="font-semibold tabular-nums text-ink">corrida Nº {corridaAReactivar}</span>).
+              </p>
+            </div>
+            <div className="flex flex-col-reverse gap-3 border-t border-line px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+              <button
+                type="button"
+                onClick={() => setPopupReactivar(false)}
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-line-strong bg-white px-5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarReactivar}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-black px-5 text-sm font-semibold text-white transition-colors hover:bg-status-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <Power className="size-4" aria-hidden="true" />
+                Sí, activar
               </button>
             </div>
           </div>

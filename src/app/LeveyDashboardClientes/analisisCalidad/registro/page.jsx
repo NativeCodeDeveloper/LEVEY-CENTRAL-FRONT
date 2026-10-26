@@ -411,7 +411,7 @@ export default function PaginaRegistroControles() {
           className={`inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-line-strong bg-white px-5 text-sm font-semibold text-ink shadow-sm transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:border-status-info hover:text-status-info hover:shadow-[0_10px_24px_rgb(91_62_200_/_0.16)] active:translate-y-0 active:scale-[0.98] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
         >
           <Eye className="size-4" aria-hidden="true" />
-          Ver Series
+          Historial de Corridas
         </Link>
         <button
           type="button"
@@ -422,7 +422,7 @@ export default function PaginaRegistroControles() {
           className={`inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-black px-5 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42_/_0.14)] transition-all duration-300 ${EASE_PREMIUM} hover:-translate-y-px hover:bg-status-info hover:shadow-[0_10px_24px_rgb(91_62_200_/_0.35)] active:translate-y-0 active:scale-[0.98] active:duration-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`}
         >
           <Plus className="size-4" aria-hidden="true" />
-          Nueva Serie Analítica
+          Nueva Corrida Analitica
         </button>
       </div>
 
@@ -488,8 +488,8 @@ export default function PaginaRegistroControles() {
           <thead className="whitespace-nowrap text-[6.5px] tracking-[0.02em]">
             <tr className="border-b border-line bg-[#f8f9fb]">
               <th scope="col" className="px-1.5 py-2.5 text-left font-semibold uppercase text-ink-muted">Analito</th>
-              <th scope="col" title="Número de serie" className="px-1.5 py-2.5 font-semibold text-ink-muted">N.Serie</th>
-              <th scope="col" title="Valor del día" className="px-1.5 py-2.5 font-semibold uppercase text-ink-muted">Valor</th>
+              <th scope="col" title="Número de serie" className="px-1.5 py-2.5 font-semibold text-ink-muted">N.Corrida</th>
+                <th scope="col" title="Valor del día" className="px-1.5 py-2.5 font-semibold uppercase text-ink-muted">Valor</th>
               <th scope="col" className="px-1.5 py-2.5 font-semibold uppercase text-ink-muted">Previo</th>
               <th scope="col" className="px-1.5 py-2.5 font-semibold uppercase text-ink-muted">Media</th>
               <th scope="col" title="Desviación estándar" className="px-1.5 py-2.5 font-semibold uppercase text-ink-muted">D.E</th>
